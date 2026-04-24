@@ -1,0 +1,36 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Run outputs
+runs/
+*.log
+
+# Data (never commit data files)
+data/
+*.npy
+*.npz
+*.zip
+
+# OS
+.DS_Store
+Thumbs.db

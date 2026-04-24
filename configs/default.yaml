@@ -1,0 +1,50 @@
+# Default hyperparameter configuration.
+#
+# Every value can be overridden from the command line, e.g.
+#   python scripts/train.py --config configs/default.yaml --n-splits 10
+
+sampling_rate_hz: 512.0
+n_splits: 5
+random_state: 42
+
+# Subjects to process. Remove entries to restrict the run.
+subjects: [SUB1, SUB2, SUB3, SUB4, SUB5, SUB6]
+
+# Per-subject pipeline declarations. Each entry is (window, band, model_key).
+# A model_key is resolved in scripts/train.py.
+#
+# The selections below reproduce the results reported in README.md.
+per_subject:
+  SUB1:
+    crop: [384, 1537]       # 2.25 s window
+    band: [8, 13]           # mu band
+    model: csp_svm_rbf
+    n_components: 4
+  SUB2:
+    crop: [384, 1537]
+    band: [7, 30]
+    model: eegnet            # external pool; not retrained here
+  SUB3:
+    crop: [256, 1537]       # 2.5 s window
+    band: [6, 30]
+    model: tangent_space_lr
+  SUB4:
+    crop: [384, 1537]
+    band: [6, 30]
+    model: stacking_over_tangent_space
+    base_bands:
+      - [6, 30]
+      - [8, 30]
+      - [4, 40]
+      - [8, 13]
+      - [6, 14]
+  SUB5:
+    crop: [256, 1537]
+    band: [10, 14]
+    model: csp_lda
+    n_components: 4
+  SUB6:
+    crop: [256, 1537]
+    band: [10, 14]
+    model: csp_lda
+    n_components: 4
