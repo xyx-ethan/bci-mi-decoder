@@ -2,11 +2,15 @@
 
 Expected on-disk layout under ``data_dir``::
 
-    SUB1_X_train.npy     # (n_train, n_channels, n_samples)
-    SUB1_y_train.npy     # (n_train,) strings: "left_hand" | "right_hand"
-    SUB1_X_test.npy      # (n_test,  n_channels, n_samples)
-    SUB2_X_train.npy
+    subject1_X_train.npy   # (n_train, n_channels, n_samples)
+    subject1_y_train.npy   # (n_train,) strings: "left_hand" | "right_hand"
+    subject1_X_test.npy    # (n_test,  n_channels, n_samples)
+    subject2_X_train.npy
     ...
+
+The prefix (``subject1`` ...) is a string identifier passed to
+``load_subject``; any stable labelling works as long as the filenames and
+the ``subjects:`` list in ``configs/default.yaml`` agree.
 
 Labels are strings at rest; they are encoded to integers (``0`` = ``left_hand``,
 ``1`` = ``right_hand``) at load time.
@@ -30,7 +34,7 @@ class SubjectData:
     Attributes
     ----------
     subject_id : str
-        Subject identifier, e.g. ``"SUB1"``.
+        Subject identifier, e.g. ``"subject1"``.
     X_train : np.ndarray
         Training trials, shape ``(n_train, n_channels, n_samples)``, ``float64``.
     y_train : np.ndarray
@@ -70,7 +74,7 @@ def load_subject(subject_id: str, data_dir: str | Path) -> SubjectData:
     Parameters
     ----------
     subject_id : str
-        Subject key, e.g. ``"SUB1"`` ... ``"SUB6"``.
+        Subject key, e.g. ``"subject1"`` ... ``"subject6"``.
     data_dir : str or Path
         Directory containing ``{subject_id}_X_train.npy``,
         ``{subject_id}_y_train.npy``, and ``{subject_id}_X_test.npy``.
@@ -103,5 +107,5 @@ def load_all_subjects(
 ) -> dict[str, SubjectData]:
     """Load every subject found under ``data_dir`` (or a provided subset)."""
     if subject_ids is None:
-        subject_ids = [f"SUB{i}" for i in range(1, 7)]
+        subject_ids = [f"subject{i}" for i in range(1, 7)]
     return {sid: load_subject(sid, data_dir) for sid in subject_ids}

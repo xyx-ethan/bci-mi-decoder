@@ -34,8 +34,8 @@ from bci_mi_decoder.preprocessing import bandpass, crop, standardize
 
 
 def _subject_codabench_id(internal_id: str) -> str:
-    """Convert SUB1 ... SUB6 to the A ... F convention used by Codabench."""
-    n = int(internal_id.replace("SUB", ""))
+    """Convert ``subject1`` ... ``subject6`` to the A ... F convention used by Codabench."""
+    n = int("".join(ch for ch in internal_id if ch.isdigit()))
     return chr(ord("A") + n - 1)
 
 

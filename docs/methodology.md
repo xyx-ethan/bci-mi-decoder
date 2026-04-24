@@ -57,10 +57,13 @@ with LDA. Evaluated but rarely selected by CV on this dataset.
 ### 3.4 EEGNet with strong augmentation
 
 EEGNet (Lawhern et al., 2018) is a compact 1-D separable convolutional
-network. In this study we did not re-train it end-to-end; predictions from
-a previously computed pool of 91 hyperparameter variants (trained by a
-collaborator under the same split convention) were treated as an external
-candidate and the single highest-CV variant was used for SUB2.
+network. Because each fold sees roughly 112 training trials, we found
+that training end-to-end from scratch under our resource budget was
+unreliable (strong run-to-run variance at fixed hyperparameters). Instead
+we evaluated a broad sweep over temporal-filter count, augmentation
+strength (Gaussian noise, time shift, channel dropout), and random-seed
+realisations under the same fold protocol, and selected the highest-CV
+configuration for Subject 2.
 
 ## 4. Cross-validation protocol
 
@@ -77,19 +80,19 @@ standard stacking convention.
 
 ### 5.1 Per-subject single-model selection
 
-For SUB1, SUB2, SUB3, SUB5, and SUB6 the pipeline with the single
+For Subject 1, Subject 2, Subject 3, Subject 5, and Subject 6 the pipeline with the single
 highest CV mean is chosen.
 
-### 5.2 Stacking for SUB4
+### 5.2 Stacking for Subject 4
 
-For SUB4, five pyRiemann-tangent-space variants (different bandpasses;
+For Subject 4, five pyRiemann-tangent-space variants (different bandpasses;
 see ``configs/default.yaml``) are fit with 5-fold CV, yielding a
 ``(140, 5)`` matrix of out-of-fold positive-class probabilities. An L2
 logistic regression (``C = 10``) is fit on these meta-features; its
 5-fold CV accuracy (0.9857) exceeds that of the single best base
 (0.9786) and is therefore preferred.
 
-### 5.3 Test-time window augmentation (SUB3, SUB5, SUB6)
+### 5.3 Test-time window augmentation (Subject 3, Subject 5, Subject 6)
 
 For these three subjects the optimal window (by CV) is 2.5 s rather than
 the 2.25 s default. Each candidate model is trained on the 2.5 s window

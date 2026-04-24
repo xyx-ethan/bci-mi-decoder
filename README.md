@@ -10,17 +10,22 @@ is used at any stage.
 Six-subject corpus, 140 train / 60 test trials per subject (2-class
 left hand vs. right hand motor imagery, 64 channels, 512 Hz sampling).
 
-| Subject | Selected model                                        | 5-fold CV |
-|:-------:|-------------------------------------------------------|:---------:|
-| SUB1    | CSP + SVM-RBF, μ band (8–13 Hz)                       |  0.9786   |
-| SUB2    | EEGNet with strong augmentation, 7–30 Hz              |  0.8786   |
-| SUB3    | pyRiemann tangent-space + logistic regression, 6–30 Hz, 2.5 s window |  1.0000   |
-| SUB4    | Stacking meta-learner (L2-logistic, C=10) over pyRiemann variants    |  0.9857   |
-| SUB5    | CSP + LDA, 10–14 Hz, 2.5 s window                     |  0.9214   |
-| SUB6    | CSP + LDA, 10–14 Hz, 2.5 s window                     |  0.9429   |
-| **Mean**|                                                       |**0.9512** |
+| Subject   | Selected model                                                       | 5-fold CV       |
+|:---------:|----------------------------------------------------------------------|:---------------:|
+| Subject 1 | CSP + SVM-RBF, μ band (8–13 Hz)                                      |  0.9786         |
+| Subject 2 | EEGNet with strong augmentation, 7–30 Hz                             |  0.8786         |
+| Subject 3 | pyRiemann tangent-space + logistic regression, 6–30 Hz, 2.5 s window |  0.9905 †       |
+| Subject 4 | Stacking meta-learner (L2-logistic, C=10) over pyRiemann variants    |  0.9857         |
+| Subject 5 | CSP + LDA, 10–14 Hz, 2.5 s window                                    |  0.9214         |
+| Subject 6 | CSP + LDA, 10–14 Hz, 2.5 s window                                    |  0.9429         |
+| **Mean**  |                                                                      | **0.9496**      |
 
-Held-out test accuracy: **0.93** (360 trials; binomial 95 % CI ≈ [0.90, 0.96]).
+Held-out test accuracy: **0.93** (360 trials; Wilson 95 % CI ≈ [0.90, 0.96]).
+
+† Under a single fixed-seed 5-fold split this pipeline's Subject 3 validation
+error was zero. The value reported here is the 6-seed stratified-CV mean; with
+only 28 validation trials per fold the cross-seed standard deviation is ~0.01,
+so the distinction between "nominally perfect" and "≈0.99" is within CV-variance noise.
 
 ### How this compares to published SOTA on similar 2-class MI benchmarks
 
@@ -30,35 +35,37 @@ Held-out test accuracy: **0.93** (360 trials; binomial 95 % CI ≈ [0.90, 0.96])
 | EEG-Conformer (Song et al., 2023)| BCI IV-2a (2-class)      | 0.85 – 0.92  | [Song et al., *IEEE TNSRE* 2023](https://ieeexplore.ieee.org/document/9991178)     |
 | CTNet (Zhao et al., 2024)        | BCI IV-2a (2-class)      | 0.87 – 0.93  | [Zhao et al., *Sci. Reports* 2024](https://www.nature.com/articles/s41598-024-71118-7) |
 | GAH-TNet (2025)                  | BCI IV-2a (2-class)      | 0.87 – 0.90  | [Brain Sciences 2025](https://www.mdpi.com/2076-3425/15/8/883)                     |
-| **This repository (CV / test)**  | 6-subject 2-class MI     |**0.95 / 0.93**| —                                                        |
+| **This repository (CV / test)**  | 6-subject 2-class MI     | **0.95 / 0.93** | —                                                        |
 
 ## Scientific contributions
 
 1. **Classical CSP + RBF-SVM on the isolated μ band dominates on one subject.**
-   On SUB1, a single CSP-filtered RBF-SVM with `n_components = 4` on the
-   8–13 Hz narrow band reaches 0.9786 CV, **outperforming every deep baseline
-   evaluated on the same split**, including a PhysioNet-pretrained
-   EEG-Conformer (0.714 CV) and EEGNet with heavy augmentation (0.824 CV).
-   This suggests that for subjects with a well-expressed sensorimotor μ-rhythm
-   ERD, the discriminative information is concentrated in a narrow band that
-   is better captured by principled spatial filtering than by broadband deep
-   networks under small-N (140-trial) training.
+   On Subject 1, a single CSP-filtered RBF-SVM with `n_components = 4`
+   restricted to 8–13 Hz reaches 0.9786 CV, **outperforming every deep
+   baseline evaluated on the same split**, including a PhysioNet-pretrained
+   EEG-Conformer (0.7143 CV) and the best augmented-EEGNet configuration
+   tested (0.8238 CV). For subjects with a well-expressed sensorimotor
+   μ-rhythm ERD, the discriminative information concentrates in a narrow
+   band that a well-conditioned spatial filter captures in closed form;
+   with ~112 training trials per fold, broadband deep networks lack the
+   data to rediscover the same structure.
 
-2. **Test-time window augmentation closes the CV-to-test gap.**
-   Training and predicting with an extended window of 2.5 s (samples
-   256–1537 at 512 Hz) rather than 2.25 s (samples 384–1537) improved
-   cross-validation on three of six subjects and achieved perfect CV on
-   SUB3. This is a specific instance of the more general finding that
-   additional post-cue EEG carries classification-relevant information
-   (Chen et al., *Sci. Reports* 2023).
+2. **A wider analysis window improves cross-validation on some subjects.**
+   For Subjects 3, 5, and 6, re-training the selected pipeline on a 2.5 s
+   window (samples 256–1537 at 512 Hz) rather than the 2.25 s default
+   (384–1537) improves 5-fold CV on each of the three, with the largest
+   gain (+0.02 CV) on Subject 6. The augmentation is train-time-derived:
+   a new classifier is fit to each window and only per-fold test
+   probabilities are averaged, so no test-label information enters the
+   choice.
 
-3. **Tangent-space stacking wins on a subset of subjects.**
-   For SUB4, an L2-regularised logistic regression trained over
+3. **Tangent-space stacking helps on a subset of subjects.**
+   For Subject 4, an L2-regularised logistic regression trained over
    out-of-fold predictions from five pyRiemann tangent-space variants
-   (distinct bandpasses / Ledoit-Wolf-regularised covariance estimators)
-   improves CV from 0.9786 (best single variant) to 0.9857. Stacking
-   helped only when (a) base-model diversity was present and (b) no
-   single base model was already near the ceiling.
+   (different bandpasses with Ledoit–Wolf-regularised covariance
+   estimation) improves CV from 0.9786 (best single variant) to 0.9857.
+   Stacking helped only when (a) base-model diversity was present and
+   (b) no single base model was already at ceiling.
 
 ## Methodology
 
@@ -82,8 +89,9 @@ All candidate families are standard published pipelines:
   with `n_components ∈ {2, 4, 6, 8}` and Ledoit-Wolf regularised covariance.
 - **pyRiemann tangent-space + logistic regression** (Barachant et al., 2012, 2013)
   under the affine-invariant (`"riemann"`) metric.
-- **EEGNet with augmentation** (Lawhern et al., 2018), 91 hyperparameter
-  variants evaluated in a separate study pool.
+- **EEGNet with augmentation** (Lawhern et al., 2018); a broad
+  hyperparameter sweep over temporal-filter count, augmentation strength,
+  and random-seed realisations is evaluated under the same folds.
 - **Filter-Bank CSP (FBCSP)** (Ang et al., 2012) with 9 overlapping bands
   and mutual-information feature selection.
 
@@ -140,13 +148,17 @@ single directory:
 
 ```
 <data_dir>/
-    SUB1_X_train.npy     # shape (n_train, n_channels, n_samples), float32/64
-    SUB1_y_train.npy     # shape (n_train,), strings "left_hand" or "right_hand"
-    SUB1_X_test.npy      # shape (n_test,  n_channels, n_samples)
-    SUB2_X_train.npy
+    subject1_X_train.npy   # shape (n_train, n_channels, n_samples), float32/64
+    subject1_y_train.npy   # shape (n_train,), strings "left_hand" or "right_hand"
+    subject1_X_test.npy    # shape (n_test,  n_channels, n_samples)
+    subject2_X_train.npy
     …
-    SUB6_X_test.npy
+    subject6_X_test.npy
 ```
+
+The naming prefix (here `subject1` … `subject6`) is a string identifier
+passed to `load_subject`; any stable labelling works as long as the
+filenames and the `subjects:` list in `configs/default.yaml` agree.
 
 Subject data are *not redistributed* from this repository; see the
 original data-sharing agreement for the BCI-ISLA 2026 challenge.

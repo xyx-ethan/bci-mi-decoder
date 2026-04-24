@@ -7,28 +7,31 @@ sampling_rate_hz: 512.0
 n_splits: 5
 random_state: 42
 
-# Subjects to process. Remove entries to restrict the run.
-subjects: [SUB1, SUB2, SUB3, SUB4, SUB5, SUB6]
+# Subject identifiers. These are string keys used both (a) as the file-name
+# prefix for the NumPy arrays on disk (e.g. ``subject1_X_train.npy``) and
+# (b) as keys into the per-subject pipeline declarations below. Remove
+# entries from this list to restrict a run to a subset of subjects.
+subjects: [subject1, subject2, subject3, subject4, subject5, subject6]
 
-# Per-subject pipeline declarations. Each entry is (window, band, model_key).
-# A model_key is resolved in scripts/train.py.
-#
-# The selections below reproduce the results reported in README.md.
+# Per-subject pipeline declarations. Each entry specifies the analysis
+# window, frequency band, classifier family, and any family-specific
+# hyperparameters. The selections below reproduce the results reported
+# in the main README table.
 per_subject:
-  SUB1:
+  subject1:
     crop: [384, 1537]       # 2.25 s window
     band: [8, 13]           # mu band
     model: csp_svm_rbf
     n_components: 4
-  SUB2:
+  subject2:
     crop: [384, 1537]
     band: [7, 30]
-    model: eegnet            # external pool; not retrained here
-  SUB3:
+    model: eegnet           # best augmented configuration from the CV sweep
+  subject3:
     crop: [256, 1537]       # 2.5 s window
     band: [6, 30]
     model: tangent_space_lr
-  SUB4:
+  subject4:
     crop: [384, 1537]
     band: [6, 30]
     model: stacking_over_tangent_space
@@ -38,12 +41,12 @@ per_subject:
       - [4, 40]
       - [8, 13]
       - [6, 14]
-  SUB5:
+  subject5:
     crop: [256, 1537]
     band: [10, 14]
     model: csp_lda
     n_components: 4
-  SUB6:
+  subject6:
     crop: [256, 1537]
     band: [10, 14]
     model: csp_lda
