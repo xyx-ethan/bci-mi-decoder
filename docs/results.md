@@ -12,7 +12,13 @@
 | Subject 6 | CSP(*k*=4) + LDA                               |  10–14    | 2.50            |  0.9429   |
 | **Mean**  |                                                |           |                 | **0.9496** |
 
-Held-out test accuracy: **0.93** (360 trials; Wilson 95 % CI [0.90, 0.96]).
+The CV column above is the **selection score** used to pick the per-subject
+pipeline; because the same folds are reused for many candidates, it is
+potentially optimistic and should not be read as an unbiased generalisation
+estimate (Cawley & Talbot, *JMLR* 2010). The held-out test accuracy is the
+primary external estimate.
+
+Held-out test accuracy: **0.93** (335/360 correct; Wilson 95 % CI ≈ [0.900, 0.953]).
 
 † Subject 3 is at this pipeline's ceiling. Under a single fixed-seed 5-fold
 split all 140 held-out trials were classified correctly (nominal CV = 1.000).
@@ -76,8 +82,9 @@ Held-out test set: 60 trials × 6 subjects = 360 total. A single percentage
 point of test accuracy corresponds to 3–4 additional trials being correctly
 classified. Wilson 95 % CI at representative operating points:
 
-- 0.92 → [0.89, 0.94]
-- 0.93 → [0.90, 0.95]
-- 0.94 → [0.91, 0.96]
+- 0.92 (331/360) → [0.888, 0.945]
+- 0.93 (335/360) → [0.900, 0.953]
+- 0.94 (338/360) → [0.910, 0.961]
 
-Differences smaller than roughly 0.01 are within test-set noise.
+Differences smaller than roughly 1–2 percentage points should not be
+over-interpreted on this set without paired predictions.

@@ -76,6 +76,28 @@ out-of-fold probabilities; the meta-learner is then CV'd on the OOF
 matrix using the same 5-fold partition (*not* nested CV). This is the
 standard stacking convention.
 
+### 4.1 Selection-CV is a selection score, not an unbiased estimator
+
+Because the same folds are used to choose among many candidate pipelines
+per subject, the selected per-subject CV should be interpreted as a
+**model-selection score**, not as an unbiased generalisation estimate
+(Cawley & Talbot, *JMLR* 2010). A fully unbiased training-set-only
+estimate would require nested CV; here, the held-out test set provides
+the external check on whether the selected protocol generalises.
+
+### 4.2 Leakage controls
+
+- All fold-dependent transforms are fit only on the training split of
+  each fold: covariance shrinkage, CSP filters, pyRiemann tangent-space
+  reference means, per-channel scalers, mutual-information feature
+  selectors, and all classifier parameters.
+- Test-time window choice (§ 5.3) is selected on training-fold CV; the
+  per-fold classifier is then retrained on that window before being
+  applied to the matching test window. No test-set information enters
+  the choice.
+- Leaderboard usage during development: 0 submissions. Final evaluation
+  submissions: 1.
+
 ## 5. Model selection
 
 ### 5.1 Per-subject single-model selection
@@ -116,6 +138,22 @@ retraining on all 140 trials.
 - Every selection decision can be reconstructed from the artifacts
   written by ``scripts/train.py`` (``report.md``, ``summary.json``).
 
+## 8. Limitations
+
+- **Small N.** 140 training trials per subject is at the lower end of
+  what modern deep networks require; conclusions about deep-model
+  performance here do not generalise to larger datasets.
+- **Within-session evaluation.** The test split is drawn from the same
+  recording session as the training split; this is not a cross-session
+  generalisation estimate.
+- **Selection-CV optimism.** The 0.9496 macro-average is a selection
+  score (§ 4.1); the held-out test accuracy (0.93) is the primary
+  external estimate.
+- **Candidate set is broad but not exhaustive.** Riemannian Procrustes
+  alignment, deep tangent-space networks, and recent transformer
+  variants tuned for sensorimotor rhythms were either tested only at
+  default settings or not tested at all.
+
 ## References
 
 Ang, K. K., Chin, Z. Y., Wang, C., Guan, C., & Zhang, H. (2012).
@@ -130,6 +168,9 @@ Barachant, A., Bonnet, S., Congedo, M., & Jutten, C. (2013).
 Blankertz, B., Tomioka, R., Lemm, S., Kawanabe, M., & Müller, K.-R. (2008).
   Optimizing spatial filters for robust EEG single-trial analysis.
   *IEEE Signal Process. Mag.*, 25(1), 41–56.
+Cawley, G. C., & Talbot, N. L. C. (2010). On over-fitting in model
+  selection and subsequent selection bias in performance evaluation.
+  *J. Mach. Learn. Res.*, 11, 2079–2107.
 Lawhern, V. J., Solon, A. J., Waytowich, N. R., Gordon, S. M., Hung, C. P.,
   & Lance, B. J. (2018). EEGNet: A compact convolutional neural network
   for EEG-based brain–computer interfaces. *J. Neural Eng.*, 15(5), 056013.

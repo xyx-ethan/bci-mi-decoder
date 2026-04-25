@@ -20,14 +20,27 @@ left hand vs. right hand motor imagery, 64 channels, 512 Hz sampling).
 | Subject 6 | CSP + LDA, 10–14 Hz, 2.5 s window                                    |  0.9429         |
 | **Mean**  |                                                                      | **0.9496**      |
 
-Held-out test accuracy: **0.93** (360 trials; Wilson 95 % CI ≈ [0.90, 0.96]).
+Held-out test accuracy: **0.93** (335/360 correct; Wilson 95 % CI ≈ [0.900, 0.953]).
+
+> **How to read these numbers.** The 5-fold CV column above is the
+> **selection score** used to pick the per-subject pipeline; because the
+> same folds are used to choose among many candidate pipelines, the
+> selected CV is potentially optimistic and should not be read as an
+> unbiased generalisation estimate (Cawley & Talbot, *JMLR* 2010). The
+> **held-out test accuracy** is the primary external estimate.
 
 † Under a single fixed-seed 5-fold split this pipeline's Subject 3 validation
 error was zero. The value reported here is the 6-seed stratified-CV mean; with
 only 28 validation trials per fold the cross-seed standard deviation is ~0.01,
 so the distinction between "nominally perfect" and "≈0.99" is within CV-variance noise.
 
-### How this compares to published SOTA on similar 2-class MI benchmarks
+### Context: published 2-class motor-imagery decoders
+
+The numbers below come from different datasets, subject pools, and
+evaluation protocols, so they are **not directly comparable** to the
+6-subject benchmark above. They are listed only to anchor the reader's
+prior on what a "strong" two-class motor-imagery decoder typically
+reports.
 
 | Method                           | Dataset                  | Reported mean | Reference                                                |
 |----------------------------------|--------------------------|:------------:|----------------------------------------------------------|
@@ -35,7 +48,7 @@ so the distinction between "nominally perfect" and "≈0.99" is within CV-varian
 | EEG-Conformer (Song et al., 2023)| BCI IV-2a (2-class)      | 0.85 – 0.92  | [Song et al., *IEEE TNSRE* 2023](https://ieeexplore.ieee.org/document/9991178)     |
 | CTNet (Zhao et al., 2024)        | BCI IV-2a (2-class)      | 0.87 – 0.93  | [Zhao et al., *Sci. Reports* 2024](https://www.nature.com/articles/s41598-024-71118-7) |
 | GAH-TNet (2025)                  | BCI IV-2a (2-class)      | 0.87 – 0.90  | [Brain Sciences 2025](https://www.mdpi.com/2076-3425/15/8/883)                     |
-| **This repository (CV / test)**  | 6-subject 2-class MI     | **0.95 / 0.93** | —                                                        |
+| **This repository (CV / test)**  | 6-subject 2-class MI     | **0.9496 / 0.93** | —                                                        |
 
 ## Scientific contributions
 
@@ -113,6 +126,20 @@ The test set is **never consulted** during step 1–3. No aggregated
 submission is re-evaluated against its leaderboard score for selection
 purposes. Step 4 produces the final submission in a single shot.
 
+### Leakage controls
+
+- **All fold-dependent transforms are fit only on the training split of each
+  fold**: covariance shrinkage, CSP filters, pyRiemann tangent-space reference
+  means, per-channel scalers, mutual-information feature selectors, and all
+  classifier parameters.
+- **Test-time window choice is training-derived.** When a 2.5 s window beats
+  the 2.25 s default for a given subject, the choice is made on training-fold
+  CV; a new per-fold classifier is then trained on that window and applied to
+  the matching test window. No leaderboard feedback or test labels are ever
+  consulted.
+- **Leaderboard usage during development: 0 submissions; final evaluation
+  submissions: 1.**
+
 ### Why this is not a deep-learning paper
 
 EEG decoding at this scale (≤ 150 trials per subject) is well known to
@@ -131,7 +158,7 @@ Tested on Python 3.10+ and Python 3.12. No GPU required for the
 selected per-subject pipelines.
 
 ```bash
-git clone https://github.com/<your-username>/bci-mi-decoder
+git clone https://github.com/xyx-ethan/bci-mi-decoder
 cd bci-mi-decoder
 python -m venv .venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
@@ -220,15 +247,29 @@ machine.
 
 - **Small N.** 140 training trials per subject is at the lower end of
   what modern deep networks require. Conclusions about deep-model
-  performance here *do not* generalise to larger datasets.
+  performance here *do not* generalise to larger datasets, and they are
+  not a verdict on deep EEG models in general.
 - **Within-subject evaluation.** The test split is drawn from the
   same recording session as the training split. Performance reported
   here is *not* a cross-session generalisation estimate; cross-session
   robustness typically drops 5–15 percentage points (see Han et al.,
   *Technologies* 2025).
-- **Ablations are partial.** Not every candidate pipeline was fully
-  seeded/bagged; the EEGNet variants were taken from a previously
-  computed pool rather than re-trained end-to-end here.
+- **Selection-CV is potentially optimistic.** The same 5-fold split is
+  used both for candidate selection and for the reported per-subject
+  CV. A fully unbiased training-set-only estimate would require nested
+  CV; the held-out test accuracy (0.93) is the external check that the
+  selected protocol generalises beyond the selection split.
+- **Candidate set is broad but not exhaustive.** Only a finite
+  hyperparameter grid was searched for the EEGNet sweep, and not every
+  configuration was multi-seed bagged. Riemannian Procrustes
+  alignment and several recent transformer variants were either
+  evaluated only at default settings or not evaluated at all.
+- **No claim about EEG foundation models in general.** A separate
+  experiment (reported in the project write-up linked from the
+  homepage) found that an off-the-shelf clinical-EEG foundation
+  checkpoint did not transfer under a lightweight fine-tuning recipe;
+  this is a protocol-specific negative result, not a verdict on the
+  model class.
 
 ## Citation
 
@@ -236,11 +277,11 @@ If you use this code, please cite:
 
 ```bibtex
 @software{bci_mi_decoder_2026,
-    author = {<Your Name>},
+    author = {Xu, Yuxuan (Ethan)},
     title  = {BCI Motor Imagery Decoder: a per-subject adaptive ensemble
-              with μ-band classical baselines},
+              with narrow-band classical baselines},
     year   = {2026},
-    url    = {https://github.com/<your-username>/bci-mi-decoder}
+    url    = {https://github.com/xyx-ethan/bci-mi-decoder}
 }
 ```
 
@@ -266,6 +307,9 @@ If you use this code, please cite:
   Rakotomamonjy, A., & Yger, F. (2018). A review of classification
   algorithms for EEG-based brain–computer interfaces: a 10 year
   update. *J. Neural Eng.*, **15**(3), 031005.
+- Cawley, G. C., & Talbot, N. L. C. (2010). On over-fitting in model
+  selection and subsequent selection bias in performance evaluation.
+  *J. Mach. Learn. Res.*, **11**, 2079–2107.
 - Miao, Z., Zhao, M., Zhang, X., & Ming, D. (2023). LMDA-Net: A
   lightweight multi-dimensional attention network for general
   EEG-based brain-computer interfaces and interpretability.
