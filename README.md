@@ -14,25 +14,32 @@ left hand vs. right hand motor imagery, 64 channels, 512 Hz sampling).
 |:---------:|----------------------------------------------------------------------|:---------------:|
 | Subject 1 | CSP + SVM-RBF, μ band (8–13 Hz)                                      |  0.9786         |
 | Subject 2 | EEGNet with strong augmentation, 7–30 Hz                             |  0.8786         |
-| Subject 3 | pyRiemann tangent-space + logistic regression, 6–30 Hz, 2.5 s window |  0.9905 †       |
+| Subject 3 | pyRiemann tangent-space + logistic regression, 6–30 Hz, 2.5 s window |  1.0000 †       |
 | Subject 4 | Stacking meta-learner (L2-logistic, C=10) over pyRiemann variants    |  0.9857         |
 | Subject 5 | CSP + LDA, 10–14 Hz, 2.5 s window                                    |  0.9214         |
 | Subject 6 | CSP + LDA, 10–14 Hz, 2.5 s window                                    |  0.9429         |
-| **Mean**  |                                                                      | **0.9496**      |
+| **Macro-average selection-CV** |                                                                      | **0.9512**      |
+| Robustness-adjusted mean (Subject 3 substituted with 6-seed mean 0.9905)    |                                                                      | 0.9496          |
 
-Held-out test accuracy: **0.93** (335/360 correct; Wilson 95 % CI ≈ [0.900, 0.953]).
+Held-out test accuracy: **0.93**. If this corresponds to 335/360 correct
+predictions, the Wilson 95 % CI is approximately [0.900, 0.953]; if it
+corresponds to 334/360, the interval is approximately [0.896, 0.950].
 
-> **How to read these numbers.** The 5-fold CV column above is the
+> **How to read these numbers.** The CV column above is the
 > **selection score** used to pick the per-subject pipeline; because the
-> same folds are used to choose among many candidate pipelines, the
-> selected CV is potentially optimistic and should not be read as an
-> unbiased generalisation estimate (Cawley & Talbot, *JMLR* 2010). The
+> same finite training set is used to choose among many candidates, the
+> selected CV is expected to be optimistic and should not be read as an
+> unbiased estimate of generalisation (Cawley & Talbot, *JMLR* 2010). The
 > **held-out test accuracy** is the primary external estimate.
 
-† Under a single fixed-seed 5-fold split this pipeline's Subject 3 validation
-error was zero. The value reported here is the 6-seed stratified-CV mean; with
-only 28 validation trials per fold the cross-seed standard deviation is ~0.01,
-so the distinction between "nominally perfect" and "≈0.99" is within CV-variance noise.
+† Under the fixed-seed 5-fold split used for argmax selection this pipeline
+had all 140 held-out trials classified correctly (selection-CV = 1.0000).
+As a stability check the same pipeline was re-run under 6 different
+stratified-CV seeds; the cross-seed mean is 0.9905 with standard deviation
+~0.010, so the distinction between "nominally perfect" and "≈ 0.99" is within
+seed-induced CV noise on this subject. Both the selection-CV figure (0.9512)
+and the robustness-adjusted figure (0.9496) are reported above so the
+substitution is explicit.
 
 ### Context: published 2-class motor-imagery decoders
 
@@ -48,7 +55,7 @@ reports.
 | EEG-Conformer (Song et al., 2023)| BCI IV-2a (2-class)      | 0.85 – 0.92  | [Song et al., *IEEE TNSRE* 2023](https://ieeexplore.ieee.org/document/9991178)     |
 | CTNet (Zhao et al., 2024)        | BCI IV-2a (2-class)      | 0.87 – 0.93  | [Zhao et al., *Sci. Reports* 2024](https://www.nature.com/articles/s41598-024-71118-7) |
 | GAH-TNet (2025)                  | BCI IV-2a (2-class)      | 0.87 – 0.90  | [Brain Sciences 2025](https://www.mdpi.com/2076-3425/15/8/883)                     |
-| **This repository (CV / test)**  | 6-subject 2-class MI     | **0.9496 / 0.93** | —                                                        |
+| **This repository (CV / test)**  | 6-subject 2-class MI     | **0.9512 / 0.93** | —                                                        |
 
 ## Scientific contributions
 
@@ -256,9 +263,11 @@ machine.
   *Technologies* 2025).
 - **Selection-CV is potentially optimistic.** The same 5-fold split is
   used both for candidate selection and for the reported per-subject
-  CV. A fully unbiased training-set-only estimate would require nested
-  CV; the held-out test accuracy (0.93) is the external check that the
-  selected protocol generalises beyond the selection split.
+  CV; the macro figure is reported as 0.9512 (selection-CV) or 0.9496
+  with a Subject 3 6-seed robustness substitution. A fully unbiased
+  training-set-only estimate would require nested CV; the held-out
+  test accuracy (0.93) is the external check that the selected
+  protocol generalises beyond the selection split.
 - **Candidate set is broad but not exhaustive.** Only a finite
   hyperparameter grid was searched for the EEGNet sweep, and not every
   configuration was multi-seed bagged. Riemannian Procrustes

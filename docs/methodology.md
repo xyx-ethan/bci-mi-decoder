@@ -146,9 +146,12 @@ retraining on all 140 trials.
 - **Within-session evaluation.** The test split is drawn from the same
   recording session as the training split; this is not a cross-session
   generalisation estimate.
-- **Selection-CV optimism.** The 0.9496 macro-average is a selection
-  score (§ 4.1); the held-out test accuracy (0.93) is the primary
-  external estimate.
+- **Selection-CV optimism.** The macro-average is reported two ways:
+  0.9512 selection-CV (using the fixed-seed Subject 3 score of 1.0000
+  that argmax selection actually consumed) and 0.9496 robustness-
+  adjusted (substituting Subject 3 with its 6-seed stratified-CV mean
+  of 0.9905). Both are selection scores in the sense of § 4.1; the
+  held-out test accuracy (0.93) is the primary external estimate.
 - **Candidate set is broad but not exhaustive.** Riemannian Procrustes
   alignment, deep tangent-space networks, and recent transformer
   variants tuned for sensorimotor rhythms were either tested only at

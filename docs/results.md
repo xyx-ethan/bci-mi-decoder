@@ -2,30 +2,33 @@
 
 ## Selected pipeline per subject
 
-| Subject   | Selected model                                 | Band (Hz) | Window (s)      | 5-fold CV |
-|:---------:|------------------------------------------------|:---------:|:---------------:|:---------:|
-| Subject 1 | CSP(*k*=4) + SVM-RBF                           |   8–13    | 2.25 (384–1537) |  0.9786   |
-| Subject 2 | EEGNet with strong augmentation                |   7–30    | 2.25            |  0.8786   |
-| Subject 3 | pyRiemann TS + L2 logistic regression          |   6–30    | 2.50 (256–1537) |  0.9905 † |
+| Subject   | Selected model                                   | Band (Hz) | Window (s)      | 5-fold CV |
+|:---------:|--------------------------------------------------|:---------:|:---------------:|:---------:|
+| Subject 1 | CSP (*k*=4) + SVM-RBF                            |   8–13    | 2.25 (384–1537) |  0.9786   |
+| Subject 2 | EEGNet with strong augmentation                  |   7–30    | 2.25            |  0.8786   |
+| Subject 3 | pyRiemann TS + L2 logistic regression            |   6–30    | 2.50 (256–1537) |  1.0000 † |
 | Subject 4 | Stacking (L2-logistic *C*=10) over 5 TS variants |   6–30    | 2.25            |  0.9857   |
-| Subject 5 | CSP(*k*=4) + LDA                               |  10–14    | 2.50            |  0.9214   |
-| Subject 6 | CSP(*k*=4) + LDA                               |  10–14    | 2.50            |  0.9429   |
-| **Mean**  |                                                |           |                 | **0.9496** |
+| Subject 5 | CSP (*k*=4) + LDA                                |  10–14    | 2.50            |  0.9214   |
+| Subject 6 | CSP (*k*=4) + LDA                                |  10–14    | 2.50            |  0.9429   |
+| **Macro-average selection-CV** |                                  |           |                 | **0.9512** |
+| Robustness-adjusted mean (Subject 3 substituted with 6-seed mean 0.9905) |                       |           |                 | 0.9496    |
 
 The CV column above is the **selection score** used to pick the per-subject
-pipeline; because the same folds are reused for many candidates, it is
-potentially optimistic and should not be read as an unbiased generalisation
-estimate (Cawley & Talbot, *JMLR* 2010). The held-out test accuracy is the
-primary external estimate.
+pipeline; because the same finite training set is reused for many
+candidates, it is expected to be optimistic and should not be read as an
+unbiased estimate of generalisation (Cawley & Talbot, *JMLR* 2010). The
+held-out test accuracy is the primary external estimate.
 
-Held-out test accuracy: **0.93** (335/360 correct; Wilson 95 % CI ≈ [0.900, 0.953]).
+Held-out test accuracy: **0.93**. If this corresponds to 335/360 correct
+predictions, the Wilson 95 % CI is approximately [0.900, 0.953]; for
+334/360 it is approximately [0.896, 0.950].
 
-† Subject 3 is at this pipeline's ceiling. Under a single fixed-seed 5-fold
-split all 140 held-out trials were classified correctly (nominal CV = 1.000).
-With only 28 validation trials per fold, the cross-seed standard deviation
-for this configuration is ~0.010, so the honest 6-seed stratified-CV mean
-of 0.9905 is reported here. The distinction between "nominally perfect" and
-"≈ 0.99" is within CV-variance noise on this subject.
+† Subject 3 sat at this pipeline's ceiling under the fixed-seed split used
+for argmax selection: all 140 held-out trials were classified correctly
+(selection-CV = 1.0000). As a stability check the same pipeline was re-run
+under 6 different stratified-CV seeds; the cross-seed mean is 0.9905 with
+standard deviation ~0.010. Both figures (selection-CV 0.9512, robustness-
+adjusted 0.9496) are reported above so the substitution is explicit.
 
 ## Full candidate search — Subject 1 (μ-band dominance)
 
@@ -86,5 +89,6 @@ classified. Wilson 95 % CI at representative operating points:
 - 0.93 (335/360) → [0.900, 0.953]
 - 0.94 (338/360) → [0.910, 0.961]
 
-Differences smaller than roughly 1–2 percentage points should not be
-over-interpreted on this set without paired predictions.
+Differences smaller than roughly 2–3 percentage points should not be
+over-interpreted on this set without paired predictions (e.g. McNemar's
+test or a paired bootstrap).
