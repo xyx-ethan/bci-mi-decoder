@@ -5,6 +5,13 @@ A per-subject adaptive ensemble for binary motor imagery classification from
 5-fold cross-validation on the training split; no feedback from the test set
 is used at any stage.
 
+> **Status.** Macro-average 5-fold selection-CV **0.9512** (or **0.9496**
+> with the Subject 3 6-seed robustness substitution); held-out test
+> accuracy **0.93**; **Rank 1 / 306** on the BCI-ISLA 2026 leaderboard
+> ([CodaBench challenge 15044](https://www.codabench.org/competitions/15044/)).
+> The exact submission code is tagged at
+> [release v0.1.0](https://github.com/xyx-ethan/bci-mi-decoder/releases/tag/v0.1.0).
+
 ## Headline results
 
 Six-subject corpus, 140 train / 60 test trials per subject (2-class
@@ -286,13 +293,17 @@ If you use this code, please cite:
 
 ```bibtex
 @software{bci_mi_decoder_2026,
-    author = {Xu, Yuxuan (Ethan)},
-    title  = {BCI Motor Imagery Decoder: a per-subject adaptive ensemble
-              with narrow-band classical baselines},
-    year   = {2026},
-    url    = {https://github.com/xyx-ethan/bci-mi-decoder}
+    author  = {Xu, Yuxuan (Ethan)},
+    title   = {BCI Motor Imagery Decoder: a per-subject adaptive ensemble
+               with narrow-band classical baselines},
+    year    = {2026},
+    version = {v0.1.0},
+    url     = {https://github.com/xyx-ethan/bci-mi-decoder/releases/tag/v0.1.0}
 }
 ```
+
+The exact code that produced the BCI-ISLA 2026 submission is permanently
+tagged at [release v0.1.0](https://github.com/xyx-ethan/bci-mi-decoder/releases/tag/v0.1.0).
 
 ## Key references
 
