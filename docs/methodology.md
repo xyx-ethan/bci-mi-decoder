@@ -114,6 +114,16 @@ logistic regression (``C = 10``) is fit on these meta-features; its
 5-fold CV accuracy (0.9857) exceeds that of the single best base
 (0.9786) and is therefore preferred.
 
+**Test-time stacking protocol.** Each base variant is run through
+identical 5-fold CV, producing two outputs: an out-of-fold positive-class
+probability matrix on the 140 training trials (the meta-feature columns)
+and an averaged-across-folds test-probability matrix on the 60 test trials.
+The meta-learner is fit once on the (140, 5) OOF matrix and then applied
+to the (60, 5) averaged-test matrix. By construction, every meta-training
+row is the prediction of a base model that did not see that row during
+base training (the standard Wolpert leakage-free stacking recipe). The
+implementation is in ``src/bci_mi_decoder/models/stacking.py``.
+
 ### 5.3 Test-time window augmentation (Subject 3, Subject 5, Subject 6)
 
 For these three subjects the optimal window (by CV) is 2.5 s rather than
@@ -126,9 +136,18 @@ no test-set information is consumed.
 
 The 5 per-fold models of the selected pipeline are each used to predict
 probabilities on the test set. These five test-probability matrices are
-averaged and argmax'd to yield the submitted labels. This is equivalent
-to a standard bagged-CV ensemble and reduces variance relative to
-retraining on all 140 trials.
+averaged and argmax'd to yield the submitted labels — a standard CV-bagged
+ensemble. Each fold-model is therefore trained on 112 / 140 trials.
+
+**Why CV-bagging rather than a full-140 refit.** The foldwise ensemble
+provides an internal averaging effect that reduces variance relative to
+a single full-data fit, and using exactly the foldwise models keeps the
+test-time protocol bit-identical to the protocol that produced the
+selection-CV scores. A post-selection full-140 refit was *not* tested
+before the single-shot submission; this repository therefore makes no
+empirical claim that CV-bagging outperformed a full-data refit on the
+held-out set. It was simply the protocol that the CV-driven selection
+implicitly committed to.
 
 ## 7. Compliance notes
 
