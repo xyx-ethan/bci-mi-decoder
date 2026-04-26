@@ -250,12 +250,16 @@ docs/
 
 ## Reproducibility
 
-All `StratifiedKFold` calls use `random_state = 42`. PyTorch models
-set both `torch.manual_seed` and NumPy/`random` seeds before each
-training run. Scikit-learn SVMs and pyRiemann use deterministic
-fitting (no sampling). Given the same input data, `scripts/train.py`
-should produce byte-identical predictions across runs on the same
-machine.
+All `StratifiedKFold` calls use `n_splits=5, shuffle=True,
+random_state=42` (the `shuffle=True` flag is required for
+`random_state` to take effect). pyRiemann's `TangentSpace` is
+configured with `metric="riemann", tsupdate=False`, so the reference
+mean is estimated only on the training fold and is not re-fit on the
+test covariance distribution. PyTorch models set both
+`torch.manual_seed` and NumPy/`random` seeds before each training run.
+Scikit-learn SVMs and pyRiemann use deterministic fitting (no
+sampling). Given the same input data, `scripts/train.py` should
+produce byte-identical predictions across runs on the same machine.
 
 ## Limitations and honest caveats
 

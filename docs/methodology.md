@@ -13,18 +13,27 @@ single predicted label per test trial.
 
 ## 2. Pre-processing
 
-All trials are cropped to a fixed time window relative to the cue. The
-default window is 2.25 s (samples 384 to 1537). pyRiemann-based pipelines
-additionally use an extended 2.5 s window (samples 256 to 1537); see
-§ 5 for the ablation motivating this choice.
-
-Each trial is band-pass filtered with a zero-phase IIR filter (MNE-Python's
-``filter_data`` with ``method="iir"``) and z-scored per channel. The band
-used is model-specific and is listed in Table 1 of the README.
-
-No ICA, artifact rejection, or session-level re-referencing is applied. This
-keeps the protocol reproducible on any 64-channel EEG dataset without
-requiring trained analysts.
+- **Sampling rate & montage.** 512 Hz, 64 channels (10–10 layout, as
+  supplied). Channel order is consumed as-is from the supplied NumPy
+  arrays.
+- **Trial cropping.** Cue-relative windows: default 2.25 s (samples
+  384–1537) for CSP and EEGNet pipelines; extended 2.5 s (samples
+  256–1537) for the pyRiemann tangent-space pipelines and for
+  Subjects 5 and 6 (see § 5 for the ablation motivating the wider
+  window).
+- **Band-pass.** Zero-phase IIR filter via
+  ``mne.filter.filter_data(method="iir")`` with subject- and
+  pipeline-specific cutoffs listed in Table 1 of the README.
+  Applied independently per trial on the cropped window.
+- **Per-trial z-score.** Mean and standard deviation are computed
+  per trial × per channel along the time axis and used to standardise
+  that trial.
+- **Not applied.** No notch filter, no session-level re-referencing,
+  no ICA, no manual artifact rejection. This keeps the protocol
+  reproducible on any 64-channel EEG dataset without requiring trained
+  analysts.
+- **Class balance.** Binary labels are balanced within each subject
+  (70 / 70 in training, 30 / 30 in test); chance accuracy is 0.5.
 
 ## 3. Candidate model families
 
@@ -42,11 +51,14 @@ We sweep ``n_components ∈ {2, 4, 6, 8}`` and report the best by CV.
 
 ### 3.2 pyRiemann tangent-space + L2 logistic regression
 
-Sample covariance matrices (Ledoit–Wolf / Oracle Approximating Shrinkage
-estimator) are projected to the tangent space at their Riemannian mean
-under the affine-invariant metric, and classified with an L2 logistic
-regression (Barachant et al., 2012, 2013). This pipeline is strong on
-subjects with clean, broadband EEG.
+Sample covariance matrices (Oracle Approximating Shrinkage estimator)
+are projected to the tangent space at their Riemannian mean under the
+affine-invariant metric, and classified with an L2 logistic regression
+(Barachant et al., 2012, 2013). The pyRiemann ``TangentSpace`` is
+configured with ``metric="riemann"`` and ``tsupdate=False``: the
+reference mean is estimated only on training-fold data and is *not*
+re-fit on the test covariance distribution at inference. This pipeline
+is strong on subjects with clean, broadband EEG.
 
 ### 3.3 Filter-Bank CSP
 
@@ -67,9 +79,13 @@ configuration for Subject 2.
 
 ## 4. Cross-validation protocol
 
-A single stratified 5-fold split (``random_state = 42``) defines the
-evaluation partition. All candidate pipelines use the same folds, so
-per-fold accuracies are directly comparable.
+A single stratified 5-fold split — ``StratifiedKFold(n_splits=5,
+shuffle=True, random_state=42)`` — defines the evaluation partition.
+All candidate pipelines use the same folds, so per-fold accuracies are
+directly comparable. The ``shuffle=True`` flag is required for
+``random_state`` to take effect; without it scikit-learn's
+``StratifiedKFold`` is deterministic by trial order and ignores the
+seed.
 
 For candidates where stacking is used (§ 5.2), the same folds produce
 out-of-fold probabilities; the meta-learner is then CV'd on the OOF
@@ -107,11 +123,14 @@ highest CV mean is chosen.
 
 ### 5.2 Stacking for Subject 4
 
-For Subject 4, five pyRiemann-tangent-space variants (different bandpasses;
-see ``configs/default.yaml``) are fit with 5-fold CV, yielding a
-``(140, 5)`` matrix of out-of-fold positive-class probabilities. An L2
-logistic regression (``C = 10``) is fit on these meta-features; its
-5-fold CV accuracy (0.9857) exceeds that of the single best base
+For Subject 4, five pyRiemann-tangent-space variants at fixed
+bandpasses — ``6–30``, ``8–30``, ``4–40``, ``8–13``, and ``6–14`` Hz
+(see ``configs/default.yaml``) — are fit with 5-fold CV, yielding a
+``(140, 5)`` matrix of out-of-fold positive-class probabilities. The
+five base variants are pre-specified before any stacking meta-learner
+is fit, and frozen before any test prediction is generated. An L2
+logistic regression (``C = 10``) is then fit on these meta-features;
+its 5-fold CV accuracy (0.9857) exceeds that of the single best base
 (0.9786) and is therefore preferred.
 
 **Test-time stacking protocol.** Each base variant is run through
