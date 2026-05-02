@@ -46,7 +46,7 @@ def main() -> None:
         proba = estimator.predict_proba(X_test)
         pred = np.argmax(proba, axis=1)
         labels = [INT_TO_LABEL[int(p)] for p in pred]
-        cb_id = chr(ord("A") + int(subject_id.replace("SUB", "")) - 1)
+        cb_id = chr(ord("A") + int("".join(ch for ch in subject_id if ch.isdigit())) - 1)
         (args.run_dir / f"subject_{cb_id}_y_pred.csv").write_text(
             "y_pred\n" + "\n".join(labels) + "\n", encoding="utf-8"
         )
@@ -55,7 +55,7 @@ def main() -> None:
     with zipfile.ZipFile(args.run_dir / "submission.zip", "w",
                          zipfile.ZIP_DEFLATED) as zf:
         for subject_id in cfg["subjects"]:
-            cb_id = chr(ord("A") + int(subject_id.replace("SUB", "")) - 1)
+            cb_id = chr(ord("A") + int("".join(ch for ch in subject_id if ch.isdigit())) - 1)
             zf.write(
                 args.run_dir / f"subject_{cb_id}_y_pred.csv",
                 arcname=f"subject_{cb_id}_y_pred.csv",

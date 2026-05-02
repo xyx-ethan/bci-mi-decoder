@@ -48,6 +48,7 @@ def make_csp_svm(
                     probability=True,
                     C=C,
                     gamma="scale",
+                    random_state=42,  # Platt-scaling internal CV is non-deterministic without this
                 ),
             ),
         ]

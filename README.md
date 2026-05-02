@@ -180,7 +180,8 @@ pip install -e .
 ```
 
 Minimum dependencies: NumPy, SciPy, scikit-learn, MNE-Python,
-pyRiemann. See `requirements.txt` for pinned versions.
+pyRiemann. See `requirements.txt` for the version-floor pin set
+(actual installed versions are determined by pip's resolver).
 
 ## Data layout
 
@@ -233,7 +234,6 @@ src/bci_mi_decoder/
     cv.py                deterministic 5-fold stratified CV
     metrics.py           accuracy, binomial confidence interval
     models/
-        base.py          common scikit-learn compatible interface
         csp_svm.py       CSP (Ledoit-Wolf) + SVM (RBF / linear)
         pyriemann_ts.py  Covariances → TangentSpace → LogisticRegression
         stacking.py      OOF stacking with per-subject meta-learner

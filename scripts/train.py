@@ -26,7 +26,6 @@ import yaml
 
 from bci_mi_decoder.cv import cv_score
 from bci_mi_decoder.data import INT_TO_LABEL, load_subject
-from bci_mi_decoder.metrics import binomial_95ci
 from bci_mi_decoder.models.csp_svm import make_csp_svm, make_csp_lda
 from bci_mi_decoder.models.pyriemann_ts import make_tangent_space_lr
 from bci_mi_decoder.models.stacking import StackingMetaLearner
