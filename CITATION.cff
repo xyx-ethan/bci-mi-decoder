@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite both the software and the JOSS paper."
+type: software
+title: "bci-mi-decoder: A reproducible per-subject adaptive ensemble for binary motor-imagery EEG decoding"
+abstract: >
+  Open-source Python package for binary motor-imagery EEG decoding under a
+  strict cross-validation protocol. Enumerates a small, pre-specified set of
+  candidate pipelines (CSP, pyRiemann tangent-space, EEGNet, stacking
+  meta-learners), selects the highest-CV pipeline per subject under a single
+  fixed StratifiedKFold partition, and produces fold-bagged probabilistic
+  predictions on a held-out test set in a single command.
+authors:
+  - family-names: Xu
+    given-names: Yuxuan
+    name-suffix: "(Ethan)"
+    email: xyx.ethan@gmail.com
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+version: 0.1.0
+date-released: "2026-04-26"
+license: MIT
+repository-code: "https://github.com/xyx-ethan/bci-mi-decoder"
+keywords:
+  - EEG
+  - brain-computer interface
+  - motor imagery
+  - cross-validation
+  - common spatial pattern
+  - Riemannian geometry
+  - reproducibility
+  - Python
