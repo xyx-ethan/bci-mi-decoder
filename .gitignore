@@ -34,3 +34,14 @@ data/
 # OS
 .DS_Store
 Thumbs.db
+
+# pytest coverage
+.coverage
+.coverage.*
+htmlcov/
+
+# benchmark artifacts (results regenerated locally)
+experiments/results/
+experiments/results_v2/
+experiments/bench_log.txt
+experiments/bench_v2_log.txt
