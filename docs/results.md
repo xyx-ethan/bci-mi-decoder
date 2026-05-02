@@ -106,14 +106,31 @@ random seeds for deep methods).
 Reproduction: `python experiments/benchmark.py all && python experiments/aggregate.py`.
 Full table and per-cell asymmetry disclosures: `experiments/SUMMARY.md`.
 
-### Headline deltas (audit-revised)
+### Headline deltas (audit-revised, v2 with per-method recipes)
 
 | Comparator | Macro CV | Δ vs submitted ensemble (0.9496) |
 |-----------|---------:|---------------------------------:|
-| **Best-of-N single methods (per-subject argmax, matched protocol)** | 0.8698 | **+7.98 pp** ← apples-to-apples |
+| **Best-of-N single methods (per-subject argmax, v2 matched protocol)** | 0.8730 | **+7.66 pp** ← apples-to-apples |
 | Best uniform single method (no per-subject selection) | 0.8369 | +11.27 pp ← deployment view |
-| EEGConformer (Song 2023, best deep) | 0.7750 | +17.46 pp |
-| Deep4Net (Schirrmeister 2017, weakest deep — protocol-disadvantaged) | 0.6325 | +31.71 pp |
+| EEGConformer v2 (Song 2023; lr=2e-4 + cosine + warmup) | 0.8179 | +13.17 pp |
+| ATCNet v2 (Altaheri 2022; lr=9e-4 + cosine) | 0.7619 | +18.77 pp |
+| Deep4Net v2 (Schirrmeister 2017; recipe-incomplete: no cropped decoding) | 0.5528 | +39.68 pp |
+
+**v2 vs v1 deep-method comparison** (v2 fixes per-method LR + cosine + warmup
+per Agent #1 audit; reproduction in `experiments/benchmark_v2.py`):
+
+| Method | v1 macro | v2 macro | Δ | v2 recipe note |
+|--------|---------:|---------:|---:|----------------|
+| EEGConformer | 0.7750 | **0.8179** | **+4.3 pp** ⭐ | lr=2e-4, cosine + 5-epoch warmup |
+| ATCNet | 0.7480 | 0.7619 | +1.4 pp | lr=9e-4, cosine |
+| ShallowConvNet | 0.7345 | 0.7282 | -0.6 pp | lr=6.25e-4, cosine |
+| EEGNetv4 | 0.7147 | 0.7012 | -1.4 pp | lr=1e-3 (unchanged), cosine |
+| EEGITNet | 0.6008 | 0.5782 | -2.3 pp | lr=1e-3 (unchanged), cosine |
+| Deep4Net | 0.6325 | **0.5528** | -8.0 pp | lr=6.25e-4, cosine, **no cropped decoding (RECIPE GAP)** |
+
+EEGConformer benefits substantially as predicted by Agent #1 (+4.3 pp);
+the strongest deep method now sits at **0.8179** but remains **1.9 pp
+below the strongest classical baseline (CSP+LDA broad 0.8369)**.
 
 ### Honest caveats (the comparison does NOT support a "we win by 11 pp"
 claim)

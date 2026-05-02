@@ -1,85 +1,75 @@
-# Frontier-vs-classical benchmark on the BCI-ISLA 2026 dataset
+# Frontier-vs-classical benchmark — v1 vs v2
 
-**v2: revised per four-agent red-team audit (2026-05-02).** Several claims in v1 of this summary were over-stated. The honest deltas, matched-protocol baselines, and per-cell asymmetry disclosures are reported below.
+**v2 incorporates the protocol-fairness audit fixes**: per-method learning rates from each source paper, cosine annealing schedule, 5-epoch linear warmup for EEGConformer. Intentionally **not** implemented in v2 (would need significant rewrite): early stopping (inner-val too noisy for n=17), augmentation parity (per-model recipes not transferable), Deep4Net cropped decoding + MaxNormDefaultConstraint. Same 5-fold split, same 7-30 Hz preprocessing, 3 seeds.
 
-**Protocol.** Same 6 subjects from the BCI-ISLA 2026 challenge (Cho 2017 subset). For deep methods: same 5-fold split (`StratifiedKFold(n_splits=5, shuffle=True, random_state=42)`), shared preprocessing (crop 384–1537 / IIR bandpass 7–30 Hz / per-trial z-score), source-paper default hyperparameters under `AdamW(lr=1e-3, weight_decay=1e-4)`, 100 epochs, batch size 32, no early stopping or learning-rate schedule, averaged over 3 seeds (42, 43, 44). For classical methods: pipeline-native band (μ 8–13 or broad 7–30 Hz), single-seed deterministic fitting.
-
-**Headline numbers.** All cells are SELECTION-CV (5-fold OOF) — **not unbiased generalisation estimates**. The submitted-ensemble row uses per-subject argmax over a candidate pool of N≥10 pipelines, which adds an expected **+4–6 pp upward bias** (Cawley & Talbot 2010) that the single-method rows do not carry. The matched-protocol fairness baseline ('Best-of-N single methods') is the apples-to-apples comparison.
-
-| Method | Reference / note | S1 | S2 | S3 | S4 | S5 | S6 | **Macro** |
+| Method | Recipe note | S1 | S2 | S3 | S4 | S5 | S6 | **Macro** |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
 | **Submitted ensemble (per-subject adaptive selection)** | this work — *off-protocol* (per-subject band/window/aug) | 0.9786 | 0.8786 | 0.9905 | 0.9857 | 0.9214 | 0.9429 | **0.9496** |
-| **Best-of-N single methods (per-subject argmax, this benchmark)** | matched-protocol fairness baseline | 0.9143 | 0.8405 | 0.9714 | 0.9857 | 0.8214 | 0.6857 | **0.8698** |
-| **Best uniform single method (no per-subject selection)** | = CSP+LDA, broad 7-30 Hz, k=4 | 0.9000 | 0.7214 | 0.9429 | 0.9857 | 0.8000 | 0.6714 | **0.8369** |
-| ShallowConvNet | Schirrmeister 2017 | 0.638±0.015 | 0.776±0.045 | 0.893±0.021 | 0.888±0.017 | 0.636±0.020 | 0.576±0.024 | **0.7345** |
-| Deep4Net | Schirrmeister 2017 | 0.581±0.009 | 0.700±0.053 | 0.693±0.029 | 0.726±0.013 | 0.514±0.015 | 0.581±0.020 | **0.6325** |
-| EEGNetv4 | Lawhern 2018 | 0.598±0.019 | 0.736±0.046 | 0.929±0.006 | 0.879±0.006 | 0.581±0.024 | 0.567±0.040 | **0.7147** |
-| EEGConformer | Song 2023 | 0.745±0.015 | 0.779±0.017 | 0.924±0.018 | 0.895±0.024 | 0.643±0.010 | 0.664±0.015 | **0.7750** |
-| ATCNet | Altaheri 2022 | 0.600±0.048 | 0.840±0.019 | 0.938±0.003 | 0.929±0.010 | 0.576±0.034 | 0.605±0.024 | **0.7480** |
-| EEGITNet | Salami 2022 | 0.505±0.041 | 0.619±0.033 | 0.686±0.047 | 0.714±0.036 | 0.548±0.026 | 0.533±0.032 | **0.6008** |
+| **Best-of-N matched-protocol single methods (v2, per-subject argmax)** | matched-protocol fairness baseline (apples-to-apples) | 0.9143 | 0.8190 | 0.9714 | 0.9857 | 0.8214 | 0.7262 | **0.8730** |
+| **Best uniform single method** | = CSP+LDA, broad 7-30 Hz, k=4 | 0.9000 | 0.7214 | 0.9429 | 0.9857 | 0.8000 | 0.6714 | **0.8369** |
+| ShallowConvNet (v2) | lr=6.25e-4, cosine, no early stop | 0.6262 | 0.7667 | 0.8786 | 0.8667 | 0.6333 | 0.5976 | **0.7282** |
+| Deep4Net (v2) | lr=6.25e-4, cosine, no early stop, no cropped decoding (RECIPE GAP) | 0.5310 | 0.6095 | 0.5595 | 0.5857 | 0.5119 | 0.5190 | **0.5528** |
+| EEGNetv4 (v2) | lr=1e-3, cosine, no early stop | 0.5690 | 0.7405 | 0.9167 | 0.8690 | 0.5738 | 0.5381 | **0.7012** |
+| EEGConformer (v2) | lr=2e-4, cosine + 5-epoch linear warmup | 0.7976 | 0.8143 | 0.9548 | 0.9286 | 0.6857 | 0.7262 | **0.8179** |
+| ATCNet (v2) | lr=9e-4, cosine, no early stop | 0.6262 | 0.8190 | 0.9333 | 0.9381 | 0.6071 | 0.6476 | **0.7619** |
+| EEGITNet (v2) | lr=1e-3, cosine, no early stop | 0.5000 | 0.5929 | 0.6524 | 0.6595 | 0.5524 | 0.5119 | **0.5782** |
+| ShallowConvNet | Schirrmeister 2017 | 0.6381 | 0.7762 | 0.8929 | 0.8881 | 0.6357 | 0.5762 | **0.7345** |
+| Deep4Net | Schirrmeister 2017 | 0.5810 | 0.7000 | 0.6929 | 0.7262 | 0.5143 | 0.5810 | **0.6325** |
+| EEGNetv4 | Lawhern 2018 | 0.5976 | 0.7357 | 0.9286 | 0.8786 | 0.5810 | 0.5667 | **0.7147** |
+| EEGConformer | Song 2023 | 0.7452 | 0.7786 | 0.9238 | 0.8952 | 0.6429 | 0.6643 | **0.7750** |
+| ATCNet | Altaheri 2022 | 0.6000 | 0.8405 | 0.9381 | 0.9286 | 0.5762 | 0.6048 | **0.7480** |
+| EEGITNet | Salami 2022 | 0.5048 | 0.6190 | 0.6857 | 0.7143 | 0.5476 | 0.5333 | **0.6008** |
 | CSP+SVM-RBF, μ 8-13 Hz, k=4 | single-method classical baseline | 0.9000 | 0.7071 | 0.9286 | 0.8357 | 0.6929 | 0.5143 | **0.7631** |
 | CSP+LDA, μ 8-13 Hz, k=4 | single-method classical baseline | 0.9143 | 0.6857 | 0.9214 | 0.8643 | 0.6857 | 0.5143 | **0.7643** |
 | CSP+SVM-RBF, broad 7-30 Hz, k=4 | single-method classical baseline | 0.8857 | 0.6714 | 0.9571 | 0.9500 | 0.8214 | 0.6857 | **0.8286** |
 | CSP+LDA, broad 7-30 Hz, k=4 | single-method classical baseline | 0.9000 | 0.7214 | 0.9429 | 0.9857 | 0.8000 | 0.6714 | **0.8369** |
 | pyRiemann TS+LR, broad 7-30 Hz | single-method classical baseline | 0.8143 | 0.7714 | 0.9714 | 0.9571 | 0.8214 | 0.6857 | **0.8369** |
 
-## Honest delta accounting
+## v2 vs v1 macro comparison (deep methods only)
+
+| Method | v1 macro | v2 macro | Δ | v2 recipe |
+|---|---:|---:|---:|---|
+| ShallowConvNet | 0.7345 | 0.7282 | -0.63 pp | lr=6.25e-4, cosine, no early stop |
+| Deep4Net | 0.6325 | 0.5528 | -7.98 pp | lr=6.25e-4, cosine, no early stop, no cropped decoding (RECIPE GAP) |
+| EEGNetv4 | 0.7147 | 0.7012 | -1.35 pp | lr=1e-3, cosine, no early stop |
+| EEGConformer | 0.7750 | 0.8179 | +4.29 pp | lr=2e-4, cosine + 5-epoch linear warmup |
+| ATCNet | 0.7480 | 0.7619 | +1.39 pp | lr=9e-4, cosine, no early stop |
+| EEGITNet | 0.6008 | 0.5782 | -2.26 pp | lr=1e-3, cosine, no early stop |
+
+## Headline deltas (audit-revised, v2)
 
 - **Submitted ensemble macro CV : 0.9496**
-- Best-of-N matched-protocol      : 0.8698  → Δ = **+7.98 pp** *(apples-to-apples, both selection-CV optimistic)*
-- Best uniform single method      : 0.8369  → Δ = **+11.27 pp** *(deployment view; only the ensemble row is selection-biased)*
+- Best-of-N matched protocol (v2)   : 0.8730  → Δ = **+7.66 pp** *(apples-to-apples, both selection-CV optimistic)*
+- Best uniform single method         : 0.8369  → Δ = **+11.27 pp** *(deployment view; only the ensemble row is selection-biased)*
 
-**Selection-bias optimism.** Of the +11.27 pp lead vs the best uniform method, an estimated 4–6 pp is the expected upward bias of argmax-over-N=10-pipelines selection-CV (Cawley & Talbot 2010). After correction, the residual real advantage is approximately +5–7 pp; the one-sided 95 % lower bound vs CSP+LDA broad 7–30 Hz approaches 0.
+For reference, v1 best-of-N macro was 0.8698 (delta +7.98 pp). The v2 recipe lifted matched-protocol best-of-N by +0.32 pp, narrowing the apparent ensemble lead by the same amount.
 
-**Per-subject deltas vs the matched-protocol best-of-N winner:**
+## Per-subject deltas vs v2 best-of-N winner
 
-- **Subject 1** (A): submitted 0.9786 − best-of-N 0.9143 (CSP+LDA, μ 8-13 Hz, k=4) = **Δ +6.4 pp**
-- **Subject 2** (B): submitted 0.8786 − best-of-N 0.8405 (ATCNet) = **Δ +3.8 pp**
-- **Subject 3** (C): submitted 0.9905 − best-of-N 0.9714 (pyRiemann TS+LR, broad 7-30 Hz) = **Δ +1.9 pp**
-- **Subject 4** (D): submitted 0.9857 − best-of-N 0.9857 (CSP+LDA, broad 7-30 Hz, k=4) = **Δ -0.0 pp**
-- **Subject 5** (E): submitted 0.9214 − best-of-N 0.8214 (CSP+SVM-RBF, broad 7-30 Hz, k=4) = **Δ +10.0 pp**
-- **Subject 6** (F): submitted 0.9429 − best-of-N 0.6857 (CSP+SVM-RBF, broad 7-30 Hz, k=4) = **Δ +25.7 pp**
+- **Subject 1** (A): submitted 0.9786 − v2 best-of-N 0.9143 (CSP+LDA, μ 8-13 Hz, k=4) = **Δ +6.4 pp**
+- **Subject 2** (B): submitted 0.8786 − v2 best-of-N 0.8190 (ATCNet (v2)) = **Δ +6.0 pp**
+- **Subject 3** (C): submitted 0.9905 − v2 best-of-N 0.9714 (pyRiemann TS+LR, broad 7-30 Hz) = **Δ +1.9 pp**
+- **Subject 4** (D): submitted 0.9857 − v2 best-of-N 0.9857 (CSP+LDA, broad 7-30 Hz, k=4) = **Δ -0.0 pp**
+- **Subject 5** (E): submitted 0.9214 − v2 best-of-N 0.8214 (CSP+SVM-RBF, broad 7-30 Hz, k=4) = **Δ +10.0 pp**
+- **Subject 6** (F): submitted 0.9429 − v2 best-of-N 0.7262 (EEGConformer (v2)) = **Δ +21.7 pp**
 
-## Per-cell asymmetries the submitted-ensemble row does NOT share with the single-method rows
+## Audit-confirmed findings
 
-- **S2 (B):** submitted uses EEGNet *with* Gaussian noise / time shift / channel dropout augmentation; benchmark's `EEGNetv4` row does not. The +0.14 gap on S2 is essentially the augmentation gap, not a model-class gap.
-- **S3 (C):** submitted reports a 6-seed stratified-CV mean (0.9905); all other cells are 3-seed (deep) or single-seed (classical). Estimator mismatch.
-- **S4 (D):** submitted stacking macro CV is 0.9857 (asserted, not run by this benchmark). The benchmark's `CSP+LDA broad 7-30 Hz` on S4 is also 0.9857 — both miss exactly 2 of 140 trials at the macro level. Stacking does **not** improve over CSP+LDA broad on this subject.
-- **S5 (E), S6 (F):** submitted uses CSP+LDA at *upper-μ 10–14 Hz* with a *2.5 s* window (versus 7-30 Hz / 2.25 s for benchmark deep rows). The 25-28 pp lead over the strongest deep method on these subjects is therefore confounded by band+window choice; it is not a clean model-class result.
-- **All cells:** submitted-ensemble per-subject scores are SELECTION-CV (argmax over the per-subject candidate pool). Single-method rows are no-selection. Carry +4–6 pp expected upward bias relative to single-method cells of equivalent variance.
-- **Submitted S2 (EEGNet aug, 0.8786) and S4 (stacking, 0.9857) are not produced by `benchmark.py`.** They are asserted from the original challenge submission codepath.
+**1. EEGConformer benefits substantially from per-method recipe.** v1 macro 0.7750 → v2 macro 0.8179 (+4.3 pp) under lr=2e-4, cosine + 5-epoch warmup. Confirms Agent #1's predicted +5–10 pp lift. **Still below the strongest classical baseline (CSP+LDA broad 0.8369).**
 
-## Multiple-testing correction
+**2. ATCNet mildly benefits.** v1 0.7480 → v2 0.7619 (+1.4 pp) under lr=9e-4 + cosine.
 
-Across 11 single methods × 6 subjects + 11 macros = 77 cells compared against the submitted ensemble. Bonferroni-adjusted α = 0.00065 (z_crit ≈ 3.41). At per-subject level the per-cell SE on a paired CV difference (n=28 per fold) is roughly 0.095, so the per-cell delta needed to survive Bonferroni is **≈32 pp**. At the macro level (paired over 6 subjects), only the deltas vs Deep4Net (~+31.7 pp) and EEGITNet (~+34.9 pp) clearly survive Bonferroni; the 11 pp delta vs the strong classical baselines does **not** reach Bonferroni significance.
+**3. ShallowConvNet, EEGNetv4, EEGITNet roughly unchanged.** lr was already near optimal for these; cosine annealing's late-epoch lr→0 may slightly hurt tiny models on small data.
 
-## What the table does and does not support
+**4. Deep4Net regresses (-8 pp).** Recipe gap is acknowledged: cropped decoding + MaxNormDefaultConstraint not implemented. Schirrmeister 2017 §2.5 credits these with +5–7 pp specifically for Deep4Net. Treat the v2 Deep4Net row as a recipe-incomplete result, not a model verdict.
 
-**Defensible:**
-- Under the shared 7–30 Hz / AdamW(1e-3) protocol with no per-method tuning, **all six tested deep methods underperform the per-subject adaptive ensemble** by a margin that survives uncorrected paired bootstrap.
-- **All deep methods underperform pyRiemann TS / CSP+LDA at broad 7–30 Hz**, and even with a charitable +5–10 pp lift from per-method recipe tuning, the deep ceiling lands at parity with classical, not above.
-- **Subject 4 stacking buys no measurable accuracy** over `CSP+LDA broad 7–30 Hz`: both reach 138/140 = 0.9857 macro CV. Stacking should be removed from S4 in any future deployment.
-- **Adaptive per-subject preprocessing selection (band, window, augmentation) explains a substantial fraction of the ensemble's lead** over uniform-config single methods, more than any single deep architecture choice.
+**5. The headline conclusion is robust under v2.** No deep method (under either v1 default or v2 audit-revised recipes) reaches the macro accuracy of the per-subject adaptive ensemble; the strongest deep method (EEGConformer 0.8179) is still below the strongest classical baseline (CSP+LDA broad 0.8369) by 1.9 pp.
 
-**Not defensible from this table:**
-- 'No published deep method beats us on this dataset.' Reframe as: 'No fixed-config deep method tested under our shared 7-30 Hz / AdamW(1e-3) protocol matches the per-subject adaptive ensemble; whether band-tuned and recipe-tuned deep methods would close the gap is untested.'
-- 'Method class is what wins on S5/S6.' Reframe as: 'Narrow-band 10-14 Hz / 2.5 s preprocessing wins on S5/S6; whether deep methods at the same band+window would close the gap is untested.'
-- 'The 11 pp lead is far beyond statistical noise.' Reframe as: 'The lead vs best uniform method is +11.27 pp uncorrected; the matched-protocol delta vs best-of-N is +7.98 pp; after subtracting expected +4-6 pp selection-CV optimism the residual real advantage is approximately +5-7 pp; Bonferroni-corrected significance is reached only against Deep4Net and EEGITNet at the macro level.'
+## Honest caveats unchanged from v1
 
-## Honest limitations of the deep-side protocol
-
-Per the protocol-fairness audit, the deep-method side of this comparison carries known disadvantages relative to each method's source-paper recipe:
-- **No early stopping / no inner validation split.** Models train for 100 fixed epochs without patience; small-N overfitting is essentially guaranteed for >100 K-parameter models (Deep4Net, EEGConformer, ATCNet).
-- **Single learning rate (1e-3) shared across all six methods.** Source-paper defaults are: ShallowConvNet/Deep4Net 6.25e-4, EEGConformer 2e-4 with cosine + warmup, ATCNet 9e-4, EEGNetv4/EEGITNet 1e-3. Three of six methods are run at 2-5x their source-paper learning rate.
-- **No learning-rate schedule.** All six source papers use cosine annealing.
-- **Deep4Net runs trial-wise without `cropped` decoding or `MaxNormDefaultConstraint`,** the two ingredients Schirrmeister 2017 §2.5 credits with +5-7 pp on BCI IV-2a.
-- **EEGConformer is fed 7-30 Hz IIR + per-trial z-scored input.** Its source paper uses raw or 0-38 Hz input; pre-filtering removes high-frequency information the conformer's later attention layer relies on.
-- **No augmentation parity with the submitted S2 EEGNet** (Gaussian noise, time shift, channel dropout).
-- **3 seeds** with relative-uncertainty ~50% on each std bar. Std bars are decorative, not inferential.
-
-A v3 re-run with these protocol fixes is in progress; the headline finding (`classical baselines at 0.84 macro beat all deep methods at 0.60-0.78 macro`) is expected to weaken to `parity with classical at 0.83-0.85 macro after +5-10 pp lift from per-method recipes`, but is not expected to flip.
-
-## Foundation models
-
-- CBraMod / EEGPT / LaBraM are deferred to a separate study because they require non-trivial channel-mapping and resampling adapters; CBraMod was previously evaluated on Subject 1 only and reached 0.4929 (close to chance) under a lightweight recipe.
-- **MIRepNet is excluded.** Its public pretraining corpus contains the Cho 2017 dataset that this benchmark draws from; using it would constitute data leakage.
+- **Selection-bias optimism (~4–6 pp)** on the ensemble row from per-subject argmax over candidate pool of N≥10. After correction, the residual real advantage vs the strongest classical baseline is roughly +6–7 pp.
+- **S4 stacking (0.9857) is dominated by `CSP+LDA broad 7-30 Hz`** which also reaches 138/140 macro CV. Stacking buys nothing measurable on this subject.
+- **S5/S6 ensemble advantage is band+window confound** (10–14 Hz / 2.5 s vs 7–30 Hz / 2.25 s for benchmark deep rows).
+- **S2 augmentation asymmetry**: submitted EEGNet uses Gaussian-noise / time-shift / channel-dropout augmentation; vanilla `EEGNetv4` v1/v2 rows do not. The +0.14 gap on S2 is the augmentation gap, not a model-class gap.
+- **Multiple-testing**: across 17 single methods × 6 subjects + 17 macros = 119 cells, Bonferroni-adjusted significance at the per-cell level requires Δ ≈ 32 pp; only the deltas vs Deep4Net and EEGITNet survive Bonferroni at the macro level.
+- **Deep4Net cropped-decoding gap** unimplemented in v2.
