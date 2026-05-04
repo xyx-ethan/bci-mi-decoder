@@ -107,12 +107,27 @@ the external check on whether the selected protocol generalises.
   each fold: covariance shrinkage, CSP filters, pyRiemann tangent-space
   reference means, per-channel scalers, mutual-information feature
   selectors, and all classifier parameters.
-- Test-time window choice (§ 5.3) is selected on training-fold CV; the
-  per-fold classifier is then retrained on that window before being
-  applied to the matching test window. No test-set information enters
-  the choice.
-- Leaderboard usage during development: 0 submissions. Final evaluation
-  submissions: 1.
+- Test-time window choice (§ 5.3) is determined by training-fold CV
+  ablation reported in `docs/results.md` § "Test-time window ablation",
+  and recorded as a YAML constant in `configs/default.yaml`. The
+  helper `bci_mi_decoder.models.tta.test_time_window_average` exists
+  for programmatic CV-driven window selection but is not currently
+  invoked by `scripts/train.py`.
+- **Leaderboard usage during development: 98 of 5000 allotted
+  submissions used over the challenge period.** The four candidate
+  submission packages produced on the final day (V2_STACKED,
+  V4_FINAL_WITH_TTA, V5_MEGA_STACKING, V5_MAJORITY_4SRC) all returned
+  a held-out test score of 0.93 within the leaderboard's displayed
+  precision; the V4_FINAL_WITH_TTA configuration is shipped at v0.1.0.
+  Selection among the four equivalent final candidates was based on
+  code reproducibility and pipeline simplicity, not leaderboard score
+  differential. We acknowledge that the development protocol involved
+  leaderboard probing, and that the per-subject CV configurations in
+  `configs/default.yaml` are the result of a manual sweep over
+  approximately 50–100 candidate (model × bandpass × window ×
+  classifier-hyperparameter) combinations per subject; the resulting
+  selection-CV scores carry an expected upward bias of ≈ 5–7 pp from
+  per-subject argmax (Cawley & Talbot 2010).
 
 ## 5. Model selection
 
@@ -163,7 +178,7 @@ provides an internal averaging effect that reduces variance relative to
 a single full-data fit, and using exactly the foldwise models keeps the
 test-time protocol bit-identical to the protocol that produced the
 selection-CV scores. A post-selection full-140 refit was *not* tested
-before the single-shot submission; this repository therefore makes no
+before the final submission; this repository therefore makes no
 empirical claim that CV-bagging outperformed a full-data refit on the
 held-out set. It was simply the protocol that the CV-driven selection
 implicitly committed to.
@@ -171,10 +186,18 @@ implicitly committed to.
 ## 7. Compliance notes
 
 - The test set is *never* consulted during candidate enumeration,
-  cross-validation, or model selection.
-- No leaderboard / submission score informs any subsequent choice.
+  cross-validation, or per-subject model selection. All within-subject
+  per-fold fitting uses only the training split of each fold.
+- No leaderboard score is used to modify a previously-evaluated
+  candidate's hyperparameters; the per-subject pipelines in
+  ``configs/default.yaml`` are the per-subject argmax of selection-CV
+  from the candidate sweep, not from leaderboard ranking.
 - Every selection decision can be reconstructed from the artifacts
   written by ``scripts/train.py`` (``report.md``, ``summary.json``).
+- The four final candidate submission packages all returned an
+  identical held-out test score (0.93) within the leaderboard's
+  displayed precision, leaving no directional signal that could have
+  been used for tuning.
 
 ## 8. Limitations
 

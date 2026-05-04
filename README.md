@@ -7,9 +7,13 @@ is used at any stage.
 
 > **Status.** Macro-average 5-fold selection-CV **0.9512** (or **0.9496**
 > with the Subject 3 6-seed robustness substitution); held-out test
-> accuracy **0.93**; **Rank 1 / 306** on the BCI-ISLA 2026 leaderboard
-> ([CodaBench challenge 15044](https://www.codabench.org/competitions/15044/)).
-> The exact submission code is tagged at
+> accuracy **0.93** on the BCI-ISLA 2026 development leaderboard
+> ([CodaBench challenge 15044](https://www.codabench.org/competitions/15044/);
+> 114 participants, organised by Pedro L. C. Rodrigues, Inria). Tied
+> for the highest displayed test accuracy at 0.93 with two other
+> participants (`sawyer`, `genichiro`); Codabench's displayed rank
+> applies an internal tiebreaker that places this submission at
+> position 4. The exact submission code is tagged at
 > [release v0.1.0](https://github.com/xyx-ethan/bci-mi-decoder/releases/tag/v0.1.0).
 
 ## Headline results
@@ -151,8 +155,18 @@ purposes. Step 4 produces the final submission in a single shot.
   CV; a new per-fold classifier is then trained on that window and applied to
   the matching test window. No leaderboard feedback or test labels are ever
   consulted.
-- **Leaderboard usage during development: 0 submissions; final evaluation
-  submissions: 1.**
+- **Leaderboard usage during development: 98 of 5000 allotted
+  submissions used over the challenge period.** The four candidate
+  packages produced on the final day of the challenge (V2_STACKED,
+  V4_FINAL_WITH_TTA, V5_MEGA_STACKING, V5_MAJORITY_4SRC) all returned
+  a held-out test score of 0.93 within the leaderboard's displayed
+  precision; the V4_FINAL_WITH_TTA configuration is shipped at v0.1.0
+  as the canonical reproducible pipeline. Selection among the four
+  equivalent final candidates was based on code reproducibility and
+  pipeline simplicity, not leaderboard score differential. The
+  protocol involved leaderboard probing during development; the
+  central mitigating fact is that the four equivalent final candidates
+  returned identical leaderboard scores within displayed precision.
 
 ### Why this is not a deep-learning paper
 

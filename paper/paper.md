@@ -34,9 +34,11 @@ and produces fold-bagged probabilistic predictions on a held-out test set
 in a single command.
 
 The package was developed during the BCI-ISLA 2026 motor-imagery
-decoding challenge (Codabench competition 15044, organised at Inria); the
-identical codepath shipped in release v0.1.0 of this repository ranked
-first of 306 submissions on the held-out test set.
+decoding challenge (Codabench competition 15044, organised at Inria);
+the identical codepath shipped in release v0.1.0 of this repository
+reached a held-out test accuracy of 0.93, tied for the highest
+displayed test score among 114 participants on the development
+leaderboard.
 
 # Statement of need
 
