@@ -1,0 +1,33 @@
+name: Build EML NeuroCreativity Bundle (Temporary)
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - scripts/build_eml_neurocreativity_bundle.sh
+      - .github/workflows/build-eml-neurocreativity-bundle-pr.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build verified PDF collection
+        shell: bash
+        run: bash scripts/build_eml_neurocreativity_bundle.sh
+
+      - name: Upload paper bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: EML_NeuroCreativity_Preparation_Papers
+          path: EML_NeuroCreativity_Preparation_Papers/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 6
