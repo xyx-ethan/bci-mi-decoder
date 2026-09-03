@@ -1,5 +1,12 @@
 import FormalConjectures.OEIS.«67599»
 
+/-!
+# Progress on the fixed-point problem for OEIS A067599
+
+This file proves that no positive prime power is a fixed point of the decimal
+prime-factorization encoding used by `OeisA67599.a`.
+-/
+
 namespace OeisA67599
 
 /-- The A067599 encoding of a positive prime power is the decimal concatenation of
@@ -34,13 +41,19 @@ theorem no_prime_power_fixed_point (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
     a (p ^ e) ≠ p ^ e := by
   rw [a_prime_pow p e hp he]
   intro hfix
-  have hpdiv : p ∣ e := by
-    exact (Nat.dvd_add_iff_left (Nat.dvd_mul_right p _)).mp (by
-      rw [hfix]
-      exact dvd_pow_self p he.ne')
+  have hsum : p ∣ p * 10 ^ (Nat.digits 10 e).length + e := by
+    rw [hfix]
+    exact dvd_pow_self p he.ne'
+  have hpdiv : p ∣ e :=
+    (Nat.dvd_add_iff_left
+      (Nat.dvd_mul_right p (10 ^ (Nat.digits 10 e).length))).mp hsum
   by_cases hsmall : e < 8
   · have hple : p ≤ e := Nat.le_of_dvd he hpdiv
-    interval_cases e <;> interval_cases p <;> norm_num at hp hfix
+    have hp2 : 2 ≤ p := hp.two_le
+    have hp7 : p ≤ 7 := by omega
+    interval_cases p
+    all_goals norm_num at hp
+    all_goals interval_cases e <;> norm_num at hpdiv hfix
   · have he8 : 8 ≤ e := by omega
     have hdigits :
         10 ^ (Nat.digits 10 e).length ≤ 10 * e :=
@@ -67,7 +80,7 @@ theorem no_prime_power_fixed_point (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
         p * 2 ^ (e - 1) ≤ p * p ^ (e - 1) := Nat.mul_le_mul_left p hbase
         _ = p ^ e := by
           conv_rhs => rw [show e = (e - 1) + 1 by omega, pow_succ]
-          omega
+          simpa [mul_comm]
     have hlt : p * 10 ^ (Nat.digits 10 e).length + e < p ^ e :=
       lt_of_lt_of_le henc_lt_two hpowers
     omega
