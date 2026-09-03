@@ -35,6 +35,12 @@ jobs:
           lake --version 2>&1 | tee ../toolchain.log
           lake exe cache get 2>&1 | tee ../cache.log
 
+      - name: Build imported upstream module
+        run: |
+          set -o pipefail
+          cd fc
+          lake build 'FormalConjectures.OEIS.«67599»' 2>&1 | tee ../upstream-target.log
+
       - name: Reject prohibited proof escapes
         run: |
           if grep -nE '(^|[^[:alnum:]_])(sorry|axiom|unsafe)([^[:alnum:]_]|$)' ci/A067599ExactProgress.lean; then
@@ -72,6 +78,7 @@ jobs:
             fc-head.log
             toolchain.log
             cache.log
+            upstream-target.log
             target-build.log
             lake-build.log
             axioms.log
