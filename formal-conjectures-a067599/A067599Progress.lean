@@ -1,9 +1,34 @@
+/-
+Copyright 2026 The Formal Conjectures Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-/
+
+import FormalConjecturesUtil
 import FormalConjectures.OEIS.«67599»
+
+/-!
+# A prime-power exclusion for OEIS A067599
+
+This file proves that no positive power of a prime is a fixed point of the decimal
+prime-factorization encoding used in OEIS A067599.
+-/
 
 namespace OeisA67599
 
 /-- On a positive prime power, the A067599 encoding is just the decimal
 concatenation of the prime and the exponent. -/
+@[category API, AMS 11]
 lemma a_prime_pow (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
     a (p ^ e) = concatenateNats p e := by
   unfold a
@@ -15,7 +40,8 @@ lemma a_prime_pow (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
   rw [if_neg (Nat.not_lt.mpr hpow_ge), hp.primeFactorsList_pow e]
   simp [List.replicate_dedup he.ne', concatenateNats]
 
-/-- The elementary exponential estimate used to eliminate large exponents. -/
+/-- An elementary exponential estimate used to eliminate large exponents. -/
+@[category API, AMS 11]
 lemma eleven_mul_add_eight_lt_two_pow_add_seven (n : ℕ) :
     11 * (n + 8) < 2 ^ (n + 7) := by
   induction n with
@@ -24,17 +50,23 @@ lemma eleven_mul_add_eight_lt_two_pow_add_seven (n : ℕ) :
       calc
         11 * (Nat.succ n + 8) ≤ 2 * (11 * (n + 8)) := by omega
         _ < 2 * 2 ^ (n + 7) := by omega
+        _ = 2 ^ ((n + 7) + 1) := by
+          conv_rhs => rw [pow_succ]
+          exact Nat.mul_comm _ _
         _ = 2 ^ (Nat.succ n + 7) := by
-          rw [show Nat.succ n + 7 = (n + 7) + 1 by omega, pow_succ]
-          omega
+          rw [show (n + 7) + 1 = Nat.succ n + 7 by omega]
 
+/-- For every exponent at least eight, `11 * e` is smaller than `2 ^ (e - 1)`. -/
+@[category API, AMS 11]
 lemma eleven_mul_lt_two_pow_pred (e : ℕ) (he : 8 ≤ e) :
     11 * e < 2 ^ (e - 1) := by
   obtain ⟨n, rfl⟩ := Nat.exists_eq_add_of_le he
-  have h := eleven_mul_add_eight_lt_two_pow_add_seven n
-  convert h using 1 <;> omega
+  rw [show 11 * (8 + n) = 11 * (n + 8) by omega]
+  rw [show 8 + n - 1 = n + 7 by omega]
+  exact eleven_mul_add_eight_lt_two_pow_add_seven n
 
 /-- No positive prime power is a fixed point of the A067599 encoding. -/
+@[category API, AMS 11]
 theorem no_prime_power_fixed_point
     (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
     a (p ^ e) ≠ p ^ e := by
@@ -46,8 +78,9 @@ theorem no_prime_power_fixed_point
   have hdiv_first : p ∣ p * 10 ^ (Nat.digits 10 e).length :=
     ⟨10 ^ (Nat.digits 10 e).length, rfl⟩
   have hp_dvd_e : p ∣ e := by
-    apply (Nat.dvd_add_iff_left hdiv_first).mp
-    simpa [concatenateNats] using hdiv_enc
+    have hsum : p ∣ e + p * 10 ^ (Nat.digits 10 e).length := by
+      simpa [concatenateNats, Nat.add_comm] using hdiv_enc
+    exact (Nat.dvd_add_iff_left hdiv_first).mpr hsum
   by_cases he8 : 8 ≤ e
   · have hdigits : 10 ^ (Nat.digits 10 e).length ≤ 10 * e :=
       Nat.base_pow_length_digits_le 10 e (by norm_num) he.ne'
@@ -78,7 +111,7 @@ theorem no_prime_power_fixed_point
   · have he7 : e ≤ 7 := by omega
     have hp_le_e : p ≤ e := Nat.le_of_dvd he hp_dvd_e
     interval_cases e <;> interval_cases p <;>
-      norm_num [concatenateNats] at hp hfix
+      norm_num [concatenateNats] at hfix
 
 #print axioms OeisA67599.no_prime_power_fixed_point
 
