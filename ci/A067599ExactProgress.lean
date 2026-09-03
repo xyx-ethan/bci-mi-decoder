@@ -36,24 +36,37 @@ lemma eleven_mul_lt_two_pow_sub_one (e : ℕ) (he : 8 ≤ e) :
       rw [hpow]
       nlinarith
 
+/-- The bounded exceptional range needed after divisibility reduces the exponent. -/
+lemma no_small_prime_power_fixed_point :
+    ∀ p e : Fin 8,
+      2 ≤ (p : ℕ) →
+      1 ≤ (e : ℕ) →
+      (p : ℕ).Prime →
+      (p : ℕ) ∣ (e : ℕ) →
+      (p : ℕ) * 10 ^ (Nat.digits 10 (e : ℕ)).length + (e : ℕ) ≠
+        (p : ℕ) ^ (e : ℕ) := by
+  native_decide
+
 /-- No positive power of a prime is a fixed point of the A067599 encoding. -/
 theorem no_prime_power_fixed_point (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
     a (p ^ e) ≠ p ^ e := by
   rw [a_prime_pow p e hp he]
   intro hfix
-  have hsum : p ∣ p * 10 ^ (Nat.digits 10 e).length + e := by
-    rw [hfix]
-    exact dvd_pow_self p he.ne'
-  have hpdiv : p ∣ e :=
-    (Nat.dvd_add_iff_left
-      (Nat.dvd_mul_right p (10 ^ (Nat.digits 10 e).length))).mp hsum
+  have hpdiv : p ∣ e := by
+    have hmod : e % p = 0 := by
+      have h := congrArg (fun n : ℕ ↦ n % p) hfix
+      have hpmod : p ^ e % p = 0 :=
+        Nat.mod_eq_zero_of_dvd (dvd_pow_self p he.ne')
+      simpa [Nat.add_mod, Nat.mul_mod, hp.ne_zero, hpmod] using h
+    exact Nat.dvd_of_mod_eq_zero hmod
   by_cases hsmall : e < 8
-  · have hple : p ≤ e := Nat.le_of_dvd he hpdiv
-    have hp2 : 2 ≤ p := hp.two_le
-    have hp7 : p ≤ 7 := by omega
-    interval_cases p
-    all_goals norm_num at hp
-    all_goals interval_cases e <;> norm_num at hpdiv hfix
+  · have hp8 : p < 8 := by
+      have hple : p ≤ e := Nat.le_of_dvd he hpdiv
+      omega
+    have hne := no_small_prime_power_fixed_point
+      (⟨p, hp8⟩ : Fin 8) (⟨e, hsmall⟩ : Fin 8)
+      hp.two_le he hp hpdiv
+    exact hne hfix
   · have he8 : 8 ≤ e := by omega
     have hdigits :
         10 ^ (Nat.digits 10 e).length ≤ 10 * e :=
