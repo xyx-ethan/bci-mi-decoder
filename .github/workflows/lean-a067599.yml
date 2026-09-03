@@ -6,6 +6,10 @@ on:
       - formal-conjectures-a067599-ci
   workflow_dispatch:
 
+concurrency:
+  group: lean-a067599-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -35,12 +39,6 @@ jobs:
           lake --version 2>&1 | tee ../toolchain.log
           lake exe cache get 2>&1 | tee ../cache.log
 
-      - name: Build imported upstream module
-        run: |
-          set -o pipefail
-          cd fc
-          lake build 'FormalConjectures.OEIS.«67599»' 2>&1 | tee ../upstream-target.log
-
       - name: Reject prohibited proof escapes
         run: |
           if grep -nE '(^|[^[:alnum:]_])(sorry|axiom|unsafe)([^[:alnum:]_]|$)' ci/A067599ExactProgress.lean; then
@@ -48,26 +46,35 @@ jobs:
             exit 1
           fi
 
-      - name: Compile proof file
+      - name: Install proof as a library module
         run: |
-          set -o pipefail
-          cp ci/A067599ExactProgress.lean fc/A067599ExactProgress.lean
-          cd fc
-          lake env lean A067599ExactProgress.lean 2>&1 | tee ../target-build.log
+          cp ci/A067599ExactProgress.lean fc/FormalConjectures/OEIS/A067599PrimePower.lean
 
-      - name: Build complete pinned repository
+      - name: Build modified target with warnings fatal
         run: |
           set -o pipefail
           cd fc
-          lake build 2>&1 | tee ../lake-build.log
+          lake --wfail build FormalConjectures.OEIS.A067599PrimePower 2>&1 | tee ../target-build.log
+
+      - name: Build complete modified repository with warnings fatal
+        run: |
+          set -o pipefail
+          cd fc
+          lake --wfail build 2>&1 | tee ../lake-build.log
 
       - name: Record proof axioms
         run: |
-          cat >> fc/A067599ExactProgress.lean <<'EOF'
+          cat > fc/A067599Axioms.lean <<'EOF'
+          import FormalConjectures.OEIS.A067599PrimePower
           #print axioms OeisA67599.no_prime_power_fixed_point
           EOF
           cd fc
-          lake env lean A067599ExactProgress.lean 2>&1 | tee ../axioms.log
+          lake env lean A067599Axioms.lean 2>&1 | tee ../axioms.log
+
+      - name: Record source diff
+        run: |
+          cd fc
+          git diff --no-index /dev/null FormalConjectures/OEIS/A067599PrimePower.lean > ../a067599.patch || test $? -eq 1
 
       - name: Upload verification logs
         if: always()
@@ -78,8 +85,8 @@ jobs:
             fc-head.log
             toolchain.log
             cache.log
-            upstream-target.log
             target-build.log
             lake-build.log
             axioms.log
+            a067599.patch
           if-no-files-found: ignore
