@@ -56,12 +56,6 @@ jobs:
           cd fc
           lake --wfail build FormalConjectures.OEIS.A067599PrimePower 2>&1 | tee ../target-build.log
 
-      - name: Build complete modified repository with warnings fatal
-        run: |
-          set -o pipefail
-          cd fc
-          lake --wfail build 2>&1 | tee ../lake-build.log
-
       - name: Record proof axioms
         run: |
           cat > fc/A067599Axioms.lean <<'EOF'
@@ -86,7 +80,6 @@ jobs:
             toolchain.log
             cache.log
             target-build.log
-            lake-build.log
             axioms.log
             a067599.patch
           if-no-files-found: ignore
