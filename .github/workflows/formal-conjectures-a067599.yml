@@ -1,0 +1,73 @@
+name: Formal Conjectures A067599 verification
+
+on:
+  push:
+    branches:
+      - tmp-formal-conjectures-a067599-20260902
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Checkout harness
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+
+      - name: Checkout Formal Conjectures snapshot
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: google-deepmind/formal-conjectures
+          ref: 1b567c2f96e2aa86328094c4b9ca57f72a0d886e
+          path: formal-conjectures
+          persist-credentials: false
+
+      - name: Install elan
+        run: |
+          set -o pipefail
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v1.4.2/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Install mathlib cache
+        working-directory: formal-conjectures
+        run: |
+          lake exe cache unpack
+          lake exe cache get
+
+      - name: Install proof module and audit forbidden declarations
+        run: |
+          cp formal-conjectures-a067599/A067599Progress.lean \
+            formal-conjectures/FormalConjectures/OEIS/A067599Progress.lean
+          if grep -nE '(^|[[:space:]])(sorry|axiom|unsafe)([[:space:]]|$)' \
+              formal-conjectures/FormalConjectures/OEIS/A067599Progress.lean; then
+            echo 'Forbidden declaration/token found.' >&2
+            exit 1
+          fi
+
+      - name: Targeted lake build
+        working-directory: formal-conjectures
+        run: |
+          set -o pipefail
+          lake --wfail build FormalConjectures.OEIS.A067599Progress 2>&1 | tee ../a067599-target-build.log
+
+      - name: Full lake build
+        working-directory: formal-conjectures
+        run: |
+          set -o pipefail
+          lake --wfail build 2>&1 | tee ../a067599-full-build.log
+
+      - name: Upload verification logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a067599-verification-logs
+          path: |
+            a067599-target-build.log
+            a067599-full-build.log
+          if-no-files-found: ignore
