@@ -1,7 +1,23 @@
+/-
+Copyright 2026 The Formal Conjectures Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-/
+
 import FormalConjectures.OEIS.«67599»
 
 /-!
-# Progress on the fixed-point problem for OEIS A067599
+# A prime-power obstruction for OEIS A067599
 
 This file proves that no positive prime power is a fixed point of the decimal
 prime-factorization encoding used by `OeisA67599.a`.
@@ -11,6 +27,7 @@ namespace OeisA67599
 
 /-- The A067599 encoding of a positive prime power is the decimal concatenation of
 its prime base and exponent. -/
+@[category API, AMS 11]
 lemma a_prime_pow (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
     a (p ^ e) = p * 10 ^ (Nat.digits 10 e).length + e := by
   rw [a]
@@ -22,6 +39,7 @@ lemma a_prime_pow (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
     omega
 
 /-- A convenient elementary growth estimate used in the prime-power exclusion. -/
+@[category API, AMS 11]
 lemma eleven_mul_lt_two_pow_sub_one (e : ℕ) (he : 8 ≤ e) :
     11 * e < 2 ^ (e - 1) := by
   induction e, he using Nat.le_induction with
@@ -37,6 +55,7 @@ lemma eleven_mul_lt_two_pow_sub_one (e : ℕ) (he : 8 ≤ e) :
       nlinarith
 
 /-- The bounded exceptional range needed after divisibility reduces the exponent. -/
+@[category test, AMS 11]
 lemma no_small_prime_power_fixed_point :
     ∀ p e : Fin 8,
       2 ≤ (p : ℕ) →
@@ -48,6 +67,7 @@ lemma no_small_prime_power_fixed_point :
   native_decide
 
 /-- No positive power of a prime is a fixed point of the A067599 encoding. -/
+@[category research solved, AMS 11]
 theorem no_prime_power_fixed_point (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
     a (p ^ e) ≠ p ^ e := by
   rw [a_prime_pow p e hp he]
@@ -93,7 +113,7 @@ theorem no_prime_power_fixed_point (p e : ℕ) (hp : p.Prime) (he : 0 < e) :
         p * 2 ^ (e - 1) ≤ p * p ^ (e - 1) := Nat.mul_le_mul_left p hbase
         _ = p ^ e := by
           conv_rhs => rw [show e = (e - 1) + 1 by omega, pow_succ]
-          simpa [mul_comm]
+          simp [mul_comm]
     have hlt : p * 10 ^ (Nat.digits 10 e).length + e < p ^ e :=
       lt_of_lt_of_le henc_lt_two hpowers
     omega
