@@ -1,0 +1,78 @@
+name: Lean A067599 verification
+
+on:
+  push:
+    branches:
+      - formal-conjectures-a067599-ci
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out temporary verification branch
+        uses: actions/checkout@v4
+
+      - name: Clone pinned Formal Conjectures snapshot
+        run: |
+          git clone https://github.com/google-deepmind/formal-conjectures.git fc
+          git -C fc checkout 1b567c2f96e2aa86328094c4b9ca57f72a0d886e
+          git -C fc rev-parse HEAD | tee fc-head.log
+
+      - name: Install elan
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh | sh -s -- -y
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Install pinned toolchain and Mathlib cache
+        run: |
+          set -o pipefail
+          cd fc
+          lake --version 2>&1 | tee ../toolchain.log
+          lake exe cache get 2>&1 | tee ../cache.log
+
+      - name: Reject prohibited proof escapes
+        run: |
+          if grep -nE '(^|[^[:alnum:]_])(sorry|axiom|unsafe)([^[:alnum:]_]|$)' ci/A067599ExactProgress.lean; then
+            echo 'Prohibited token found in proof source.'
+            exit 1
+          fi
+
+      - name: Compile proof file
+        run: |
+          set -o pipefail
+          cp ci/A067599ExactProgress.lean fc/A067599ExactProgress.lean
+          cd fc
+          lake env lean A067599ExactProgress.lean 2>&1 | tee ../target-build.log
+
+      - name: Build complete pinned repository
+        run: |
+          set -o pipefail
+          cd fc
+          lake build 2>&1 | tee ../lake-build.log
+
+      - name: Record proof axioms
+        run: |
+          cat >> fc/A067599ExactProgress.lean <<'EOF'
+          #print axioms OeisA67599.no_prime_power_fixed_point
+          EOF
+          cd fc
+          lake env lean A067599ExactProgress.lean 2>&1 | tee ../axioms.log
+
+      - name: Upload verification logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a067599-lean-logs
+          path: |
+            fc-head.log
+            toolchain.log
+            cache.log
+            target-build.log
+            lake-build.log
+            axioms.log
+          if-no-files-found: ignore
