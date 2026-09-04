@@ -1,0 +1,117 @@
+--- a/FormalConjectures/OEIS/67599.lean
++++ b/FormalConjectures/OEIS/67599.lean
+@@ -60,6 +60,114 @@
+ theorem a_6 : a 6 = 2131 := by
+   decide +native
+ 
++
++private lemma lt_ten_pow_digits_length (n : ℕ) :
++    n < 10 ^ (Nat.digits 10 n).length := by
++  exact (Nat.digits_length_le_iff (by norm_num : 1 < 10) n).mp le_rfl
++
++private lemma mul_lt_concatenateNats {x y : ℕ} (hx : 0 < x) :
++    x * y < concatenateNats x y := by
++  unfold concatenateNats
++  have hy : y < 10 ^ (Nat.digits 10 y).length := lt_ten_pow_digits_length y
++  have hmul : x * y < x * 10 ^ (Nat.digits 10 y).length :=
++    (Nat.mul_lt_mul_left hx).2 hy
++  omega
++
++private lemma mul_lt_append_prime_one {x p : ℕ} (hx : 0 < x) (hp : 0 < p) :
++    x * p < concatenateNats (concatenateNats x p) 1 := by
++  have h₁ : x * p < concatenateNats x p := mul_lt_concatenateNats hx
++  have hxp : 0 < concatenateNats x p := by
++    exact (Nat.mul_pos hx hp).trans h₁
++  have h₂ : concatenateNats x p * 1 < concatenateNats (concatenateNats x p) 1 :=
++    mul_lt_concatenateNats hxp
++  exact h₁.trans (by simpa using h₂)
++
++private lemma mul_prod_le_fold_pairs (x : ℕ) (hx : 0 < x) :
++    ∀ ps : List ℕ, (∀ p ∈ ps, 0 < p) →
++      x * ps.prod ≤
++        (ps.flatMap fun p ↦ [p, 1]).foldl concatenateNats x := by
++  intro ps hps
++  induction ps generalizing x with
++  | nil => simp
++  | cons p ps ih =>
++      have hp : 0 < p := hps p (by simp)
++      have htail : ∀ q ∈ ps, 0 < q := by
++        intro q hq
++        exact hps q (by simp [hq])
++      let y := concatenateNats (concatenateNats x p) 1
++      have hxy : x * p < y := mul_lt_append_prime_one hx hp
++      have hy : 0 < y := (Nat.mul_pos hx hp).trans hxy
++      have hmul : (x * p) * ps.prod ≤ y * ps.prod :=
++        Nat.mul_le_mul_right ps.prod (Nat.le_of_lt hxy)
++      have hih : y * ps.prod ≤
++          (ps.flatMap fun q ↦ [q, 1]).foldl concatenateNats y :=
++        ih hy htail
++      simpa [y, List.foldl_append, Nat.mul_assoc] using hmul.trans hih
++
++private lemma prod_lt_fold_pairs {p : ℕ} (hp : 0 < p) (ps : List ℕ)
++    (hps : ∀ q ∈ ps, 0 < q) :
++    (p :: ps).prod <
++      ((p :: ps).flatMap fun q ↦ [q, 1]).foldl concatenateNats 0 := by
++  let start := concatenateNats p 1
++  have hstart : p < start := by
++    dsimp [start, concatenateNats]
++    omega
++  have hstart_pos : 0 < start := hp.trans hstart
++  have hprod_pos : 0 < ps.prod := List.prod_pos hps
++  have hleft : p * ps.prod < start * ps.prod :=
++    (Nat.mul_lt_mul_right hprod_pos).2 hstart
++  have hright : start * ps.prod ≤
++      (ps.flatMap fun q ↦ [q, 1]).foldl concatenateNats start :=
++    mul_prod_le_fold_pairs start hstart_pos ps hps
++  simpa [start, List.foldl_append, concatenateNats, Nat.mul_assoc] using
++    hleft.trans_le hright
++
++/-- For every squarefree `n ≥ 2`, its decimal prime-factorization encoding is strictly larger
++than `n`. In particular, no squarefree integer can be a fixed point of `a`. -/
++@[category API, AMS 11]
++theorem lt_a_of_squarefree {n : ℕ} (hn : 2 ≤ n) (hsq : Squarefree n) : n < a n := by
++  have hn0 : n ≠ 0 := by omega
++  have hne : n.primeFactorsList ≠ [] :=
++    (Nat.primeFactorsList_ne_nil n).2 (by omega)
++  obtain ⟨p, ps, hfac⟩ := List.exists_cons_of_ne_nil hne
++  have hnodup : n.primeFactorsList.Nodup := hsq.nodup_primeFactorsList
++  have hcount : ∀ q ∈ n.primeFactorsList, n.primeFactorsList.count q = 1 :=
++    (List.nodup_iff_count_eq_one.mp hnodup)
++  have hflat :
++      n.primeFactorsList.flatMap (fun q ↦ [q, n.primeFactorsList.count q]) =
++        n.primeFactorsList.flatMap (fun q ↦ [q, 1]) := by
++    apply List.flatMap_congr
++    intro q hq
++    rw [hcount q hq]
++  have hp : 0 < p := by
++    apply Nat.pos_of_mem_primeFactorsList
++    rw [hfac]
++    simp
++  have hps : ∀ q ∈ ps, 0 < q := by
++    intro q hq
++    apply Nat.pos_of_mem_primeFactorsList
++    rw [hfac]
++    simp [hq]
++  have hprod : (p :: ps).prod <
++      ((p :: ps).flatMap fun q ↦ [q, 1]).foldl concatenateNats 0 :=
++    prod_lt_fold_pairs hp ps hps
++  have hprod_eq : (p :: ps).prod = n := by
++    simpa [hfac] using Nat.prod_primeFactorsList hn0
++  have hnlt : ¬ n < 2 := by omega
++  calc
++    n = (p :: ps).prod := hprod_eq.symm
++    _ < ((p :: ps).flatMap fun q ↦ [q, 1]).foldl concatenateNats 0 := hprod
++    _ = a n := by
++      unfold a
++      rw [if_neg hnlt]
++      rw [List.dedup_eq_self.mpr hnodup]
++      rw [hflat, hfac]
++
++/-- No squarefree integer `n ≥ 2` is a fixed point of the A067599 encoding. -/
++@[category API, AMS 11]
++theorem a_ne_of_squarefree {n : ℕ} (hn : 2 ≤ n) (hsq : Squarefree n) : a n ≠ n := by
++  exact ne_of_gt (lt_a_of_squarefree hn hsq)
++
+ /--
+ "$a(31) = a(177147) = 311$. Is there any solution to $a(n) = n$?
+ - _Franklin T. Adams-Watters_, Dec 18 2006"
