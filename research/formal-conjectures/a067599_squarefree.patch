@@ -1,6 +1,6 @@
 --- a/FormalConjectures/OEIS/67599.lean
 +++ b/FormalConjectures/OEIS/67599.lean
-@@ -60,6 +60,119 @@
+@@ -60,6 +60,118 @@
  theorem a_6 : a 6 = 2131 := by
    decide +native
  
