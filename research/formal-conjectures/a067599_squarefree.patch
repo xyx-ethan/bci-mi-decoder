@@ -1,14 +1,16 @@
 --- a/FormalConjectures/OEIS/67599.lean
 +++ b/FormalConjectures/OEIS/67599.lean
-@@ -60,6 +60,114 @@
+@@ -60,6 +60,119 @@
  theorem a_6 : a 6 = 2131 := by
    decide +native
  
 +
++@[category API, AMS 11]
 +private lemma lt_ten_pow_digits_length (n : ℕ) :
 +    n < 10 ^ (Nat.digits 10 n).length := by
 +  exact (Nat.digits_length_le_iff (by norm_num : 1 < 10) n).mp le_rfl
 +
++@[category API, AMS 11]
 +private lemma mul_lt_concatenateNats {x y : ℕ} (hx : 0 < x) :
 +    x * y < concatenateNats x y := by
 +  unfold concatenateNats
@@ -17,6 +19,7 @@
 +    (Nat.mul_lt_mul_left hx).2 hy
 +  omega
 +
++@[category API, AMS 11]
 +private lemma mul_lt_append_prime_one {x p : ℕ} (hx : 0 < x) (hp : 0 < p) :
 +    x * p < concatenateNats (concatenateNats x p) 1 := by
 +  have h₁ : x * p < concatenateNats x p := mul_lt_concatenateNats hx
@@ -26,6 +29,7 @@
 +    mul_lt_concatenateNats hxp
 +  exact h₁.trans (by simpa using h₂)
 +
++@[category API, AMS 11]
 +private lemma mul_prod_le_fold_pairs (x : ℕ) (hx : 0 < x) :
 +    ∀ ps : List ℕ, (∀ p ∈ ps, 0 < p) →
 +      x * ps.prod ≤
@@ -45,17 +49,17 @@
 +        Nat.mul_le_mul_right ps.prod (Nat.le_of_lt hxy)
 +      have hih : y * ps.prod ≤
 +          (ps.flatMap fun q ↦ [q, 1]).foldl concatenateNats y :=
-+        ih hy htail
++        ih y hy htail
 +      simpa [y, List.foldl_append, Nat.mul_assoc] using hmul.trans hih
 +
++@[category API, AMS 11]
 +private lemma prod_lt_fold_pairs {p : ℕ} (hp : 0 < p) (ps : List ℕ)
 +    (hps : ∀ q ∈ ps, 0 < q) :
 +    (p :: ps).prod <
 +      ((p :: ps).flatMap fun q ↦ [q, 1]).foldl concatenateNats 0 := by
 +  let start := concatenateNats p 1
 +  have hstart : p < start := by
-+    dsimp [start, concatenateNats]
-+    omega
++    simpa [start] using (mul_lt_concatenateNats (x := p) (y := 1) hp)
 +  have hstart_pos : 0 < start := hp.trans hstart
 +  have hprod_pos : 0 < ps.prod := List.prod_pos hps
 +  have hleft : p * ps.prod < start * ps.prod :=
@@ -103,7 +107,7 @@
 +    _ < ((p :: ps).flatMap fun q ↦ [q, 1]).foldl concatenateNats 0 := hprod
 +    _ = a n := by
 +      unfold a
-+      rw [if_neg hnlt]
++      simp only [if_neg hnlt]
 +      rw [List.dedup_eq_self.mpr hnodup]
 +      rw [hflat, hfac]
 +
