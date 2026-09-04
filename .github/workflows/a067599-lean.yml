@@ -1,0 +1,82 @@
+name: A067599 Lean verification
+
+on:
+  push:
+    branches:
+      - research/formal-conjectures-a067599-r3
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout isolated research branch
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+
+      - name: Install elan
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v1.4.2/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Clone locked Formal Conjectures snapshot
+        run: |
+          set -euxo pipefail
+          git clone https://github.com/google-deepmind/formal-conjectures.git formal-conjectures
+          cd formal-conjectures
+          git checkout 27f7d5b62fb86f586a5432bf2de56f99dc9b0aa6
+          test "$(git rev-parse HEAD)" = "27f7d5b62fb86f586a5432bf2de56f99dc9b0aa6"
+
+      - name: Apply and audit proof patch
+        run: |
+          set -euxo pipefail
+          cd formal-conjectures
+          git apply --check ../research/formal-conjectures/a067599_squarefree.patch
+          git apply ../research/formal-conjectures/a067599_squarefree.patch
+          git diff --check
+          added=$(git diff --unified=0 -- FormalConjectures/OEIS/67599.lean | grep '^+' | grep -v '^+++' || true)
+          if printf '%s\n' "$added" | grep -E '\b(sorry|axiom|unsafe)\b'; then
+            echo 'Forbidden proof escape hatch in added lines' >&2
+            exit 1
+          fi
+
+      - name: Fetch mathlib cache
+        run: |
+          set -euxo pipefail
+          cd formal-conjectures
+          lake exe cache get
+
+      - name: Build modified target
+        run: |
+          set -euxo pipefail
+          cd formal-conjectures
+          lake --wfail build FormalConjectures.OEIS.«67599» 2>&1 | tee ../a067599-target-build.log
+
+      - name: Build complete project
+        run: |
+          set -euxo pipefail
+          cd formal-conjectures
+          ./scripts/mk_all_formathlib.sh
+          rm -f FormalConjectures/All.lean
+          lake exe mk_all --lib FormalConjectures || true
+          mv FormalConjectures.lean FormalConjectures/All.lean
+          echo 'set_option linter.style.moduleDocstring false' >> FormalConjectures/All.lean
+          lake --wfail build 2>&1 | tee ../a067599-full-build.log
+          rm -f FormalConjectures/All.lean
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a067599-lean-build-logs
+          path: |
+            a067599-target-build.log
+            a067599-full-build.log
+          if-no-files-found: warn
