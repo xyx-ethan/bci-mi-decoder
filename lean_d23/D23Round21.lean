@@ -9,22 +9,18 @@ def normSq (x y : ℤ) : ℤ := x * x + y * y
 def detZ (rx ry sx sy : ℤ) : ℤ := rx * sy - ry * sx
 
 lemma normSq_nonneg (x y : ℤ) : 0 ≤ normSq x y := by
-  simp only [normSq]
-  positivity
+  unfold normSq
+  nlinarith [sq_nonneg x, sq_nonneg y]
 
 lemma normSq_eq_zero_iff (x y : ℤ) : normSq x y = 0 ↔ x = 0 ∧ y = 0 := by
   constructor
   · intro h
     have hx2 : x * x = 0 := by
-      have hy2 : 0 ≤ y * y := by positivity
-      have hx2n : 0 ≤ x * x := by positivity
-      simp only [normSq] at h
-      nlinarith
+      unfold normSq at h
+      nlinarith [sq_nonneg x, sq_nonneg y]
     have hy2 : y * y = 0 := by
-      have hx2n : 0 ≤ x * x := by positivity
-      have hy2n : 0 ≤ y * y := by positivity
-      simp only [normSq] at h
-      nlinarith
+      unfold normSq at h
+      nlinarith [sq_nonneg x, sq_nonneg y]
     rcases mul_eq_zero.mp hx2 with hx | hx <;>
       rcases mul_eq_zero.mp hy2 with hy | hy <;>
       exact ⟨hx, hy⟩
@@ -64,10 +60,10 @@ theorem fullRank_scalar_norm_lt_sixteen
     apply hdet
     simp [detZ, hsx, hsy]
   have hrpos : 0 < normSq rx ry := by
-    have := normSq_nonneg rx ry
+    have h := normSq_nonneg rx ry
     omega
   have hspos : 0 < normSq sx sy := by
-    have := normSq_nonneg sx sy
+    have h := normSq_nonneg sx sy
     omega
   have ht_nonneg : 0 ≤ normSq tx ty := normSq_nonneg tx ty
   have hrespos :
@@ -78,8 +74,10 @@ theorem fullRank_scalar_norm_lt_sixteen
     obtain ⟨hwx, hwy⟩ := (normSq_eq_zero_iff wx wy).mp hw0
     subst wx
     subst wy
-    simp [normSq] at henergy
-    nlinarith
+    have hz :
+        normSq tx ty + 2 * normSq rx ry + 2 * normSq sx sy = 0 := by
+      simpa [normSq] using henergy
+    exact (ne_of_gt hrespos) hz
   have hw_nonneg : 0 ≤ normSq wx wy := normSq_nonneg wx wy
   have hwpos : 0 < normSq wx wy := by omega
   have hqpos : 0 < q := lt_of_lt_of_le hp hpq
@@ -92,7 +90,8 @@ theorem fullRank_scalar_norm_lt_sixteen
   have hcauchy :
       (A * wx + B * wy) * (A * wx + B * wy) ≤
         (p * p) * normSq wx wy := by
-    have hcross : 0 ≤ (A * wy - B * wx) * (A * wy - B * wx) := by positivity
+    have hcross : 0 ≤ (A * wy - B * wx) * (A * wy - B * wx) := by
+      nlinarith [sq_nonneg (A * wy - B * wx)]
     simp only [normSq] at hbeta ⊢
     nlinarith
   let X : ℤ := q * normSq wx wy
@@ -119,9 +118,11 @@ theorem fullRank_scalar_norm_lt_sixteen
   have hlt16 : normSq wx wy < 16 := by
     by_contra hnot
     have hNge : 16 ≤ normSq wx wy := by omega
-    have hscale_nonneg : 0 ≤ (p * p) * normSq wx wy := by positivity
+    have hscale_nonneg : 0 ≤ (p * p) * normSq wx wy :=
+      mul_nonneg (le_of_lt hp2pos) hw_nonneg
     have hmulN := mul_le_mul_of_nonneg_right hNge hscale_nonneg
-    have hN2nonneg : 0 ≤ normSq wx wy * normSq wx wy := by positivity
+    have hN2nonneg : 0 ≤ normSq wx wy * normSq wx wy :=
+      mul_nonneg hw_nonneg hw_nonneg
     have hmulQ := mul_le_mul_of_nonneg_right hq2ge hN2nonneg
     nlinarith [hsquare_bound, hmulN, hmulQ]
   exact ⟨hwpos, hlt16⟩
@@ -133,22 +134,35 @@ theorem smallGaussian_norm_cases (x y : ℤ)
     normSq x y = 5 ∨ normSq x y = 8 ∨ normSq x y = 9 ∨
     normSq x y = 10 ∨ normSq x y = 13 := by
   have hxlo : -3 ≤ x := by
-    have hx2 : 0 ≤ y * y := by positivity
+    have hy2 : 0 ≤ y * y := by
+      nlinarith [sq_nonneg y]
     simp only [normSq] at hlt
+    by_contra h
+    have hxle : x ≤ -4 := by omega
     nlinarith
   have hxhi : x ≤ 3 := by
-    have hx2 : 0 ≤ y * y := by positivity
+    have hy2 : 0 ≤ y * y := by
+      nlinarith [sq_nonneg y]
     simp only [normSq] at hlt
+    by_contra h
+    have hxge : 4 ≤ x := by omega
     nlinarith
   have hylo : -3 ≤ y := by
-    have hy2 : 0 ≤ x * x := by positivity
+    have hx2 : 0 ≤ x * x := by
+      nlinarith [sq_nonneg x]
     simp only [normSq] at hlt
+    by_contra h
+    have hyle : y ≤ -4 := by omega
     nlinarith
   have hyhi : y ≤ 3 := by
-    have hy2 : 0 ≤ x * x := by positivity
+    have hx2 : 0 ≤ x * x := by
+      nlinarith [sq_nonneg x]
     simp only [normSq] at hlt
+    by_contra h
+    have hyge : 4 ≤ y := by omega
     nlinarith
-  interval_cases x <;> interval_cases y <;> norm_num [normSq] at hpos hlt ⊢
+  interval_cases x <;> interval_cases y
+  all_goals norm_num [normSq] at *
 
 /-- The full-rank scalar identity therefore leaves only eight possible squared norms for `W`. -/
 theorem fullRank_scalar_norm_cases
