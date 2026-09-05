@@ -42,10 +42,11 @@ def qBound : ℕ → ℕ
 theorem p_eq_two_of_f2_solution (p q e : ℕ)
     (hp : p.Prime) (hq : q.Prime) (hpq : p < q)
     (hfix : encoded p q e 2 = p ^ e * q ^ 2) : p = 2 := by
-  rcases hp.eq_two_or_odd with hp2 | hpodd
+  rcases hp.eq_two_or_odd' with hp2 | hpodd
   · exact hp2
+  have hp2le : 2 ≤ p := hp.two_le
   have hqne : q ≠ 2 := by omega
-  have hqodd := hq.eq_two_or_odd.resolve_left hqne
+  have hqodd := hq.eq_two_or_odd'.resolve_left hqne
   obtain ⟨u, hu⟩ := hpodd.pow.mul hqodd.pow
   rw [hu] at hfix
   unfold encoded at hfix
