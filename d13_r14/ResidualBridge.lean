@@ -5,7 +5,7 @@ import D13R9Reconstruction
 namespace D13.R14
 
 /-- Reduce an exponent modulo a certified multiplicative period. -/
-theorem pow_mod_period (M b m k : ℕ) (hm : 0 < m)
+theorem pow_mod_period (M b m k : ℕ) (_hm : 0 < m)
     (hper : Nat.ModEq M (b^m) 1) :
     Nat.ModEq M (b^k) (b^(k % m)) := by
   have hdecomp : k % m + m * (k / m) = k := Nat.mod_add_div k m
@@ -29,7 +29,9 @@ theorem q1_exponent_residue (k : ℕ)
   have hs : s < 199 := Nat.mod_lt _ (by decide)
   change (740 * 10^s + 1) % 797 = 0 at hz
   change s = 136
-  interval_cases s <;> norm_num at hz ⊢
+  interval_cases s
+  all_goals try norm_num at hz
+  all_goals norm_num
 
 theorem q2_exponent_mod_six (k : ℕ)
     (hdiv : 2177 ∣ 370*10^k+1) : k % 6 = 0 := by
@@ -45,7 +47,9 @@ theorem q2_exponent_mod_six (k : ℕ)
   have hs : s < 6 := Nat.mod_lt _ (by decide)
   change (370 * 10^s + 1) % 7 = 0 at hz
   change s = 0
-  interval_cases s <;> norm_num at hz ⊢
+  interval_cases s
+  all_goals try norm_num at hz
+  all_goals norm_num
 
 theorem q2_exponent_mod_155 (k : ℕ)
     (hdiv : 2177 ∣ 370*10^k+1) : k % 155 = 46 := by
@@ -61,7 +65,9 @@ theorem q2_exponent_mod_155 (k : ℕ)
   have hs : s < 155 := Nat.mod_lt _ (by decide)
   change (370 * 10^s + 1) % 311 = 0 at hz
   change s = 46
-  interval_cases s <;> norm_num at hz ⊢
+  interval_cases s
+  all_goals try norm_num at hz
+  all_goals norm_num
 
 theorem q2_exponent_residue (k : ℕ)
     (hdiv : 2177 ∣ 370*10^k+1) : k % 930 = 666 := by
