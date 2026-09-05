@@ -61,7 +61,6 @@ def casesHigh : List Case :=
 
 def cases : List Case := casesTwo ++ casesHigh
 
--- Cheap kernel count of the explicit reduced search space.
 theorem cases_length : cases.length = 21112 := by
   decide +kernel
 
@@ -99,10 +98,10 @@ theorem p_eq_two_of_f2_solution (p q e : ℕ)
   have hm := congrArg (fun n : ℕ ↦ n % 2) hfix
   simp [encoded, Nat.add_mod, Nat.mul_mod, Nat.pow_mod, hpodd, hqodd] at hm
 
-theorem qpow_upper (p q e f : ℕ) (he14 : e ≤ 14)
+theorem qpow_upper (p q e f : ℕ) (hp : p.Prime) (he14 : e ≤ 14)
     (hineq : p ^ (e - 1) * q ^ (f - 1) ≤ 1120 * e * f) :
     q ^ (f - 1) ≤ 1120 * 14 * f := by
-  have hp1 : 1 ≤ p ^ (e - 1) := by positivity
+  have hp1 : 1 ≤ p ^ (e - 1) := Nat.one_le_pow _ _ hp.pos
   calc
     q ^ (f - 1) = 1 * q ^ (f - 1) := by simp
     _ ≤ p ^ (e - 1) * q ^ (f - 1) := Nat.mul_le_mul_right _ hp1
@@ -116,10 +115,10 @@ theorem base_le_of_pow_le (q r B C : ℕ)
   have hp : (B + 1) ^ r ≤ q ^ r := pow_le_pow_left' hb r
   omega
 
-theorem q_le_qBound (p q e f : ℕ)
+theorem q_le_qBound (p q e f : ℕ) (hp : p.Prime)
     (he14 : e ≤ 14) (hf3 : 3 ≤ f) (hf9 : f ≤ 9)
     (hineq : p ^ (e - 1) * q ^ (f - 1) ≤ 1120 * e * f) : q ≤ qBound f := by
-  have h := qpow_upper p q e f he14 hineq
+  have h := qpow_upper p q e f hp he14 hineq
   interval_cases f
   · exact base_le_of_pow_le q 2 216 47040 (by simpa using h) (by norm_num)
   · exact base_le_of_pow_le q 3 39 62720 (by simpa using h) (by norm_num)
@@ -132,7 +131,6 @@ theorem q_le_qBound (p q e f : ℕ)
 theorem qBound_le_216 (f : ℕ) (hf3 : 3 ≤ f) (hf9 : f ≤ 9) : qBound f ≤ 216 := by
   interval_cases f <;> norm_num [qBound]
 
-/-- Every exact encoded fixed point in the inherited finite `f≥2` box lies in `cases`. -/
 theorem finite_fge2_reduces_to_cases (p q e f : ℕ)
     (hp : p.Prime) (hq : q.Prime) (hpq : p < q)
     (he1 : 1 ≤ e) (he14 : e ≤ 14)
@@ -147,7 +145,7 @@ theorem finite_fge2_reduces_to_cases (p q e f : ℕ)
     subst p
     exact List.mem_append_left _ (mem_casesTwo q e hq hq2240 he1 he14)
   · have hf3 : 3 ≤ f := by omega
-    have hqB := q_le_qBound p q e f he14 hf3 hf9 hineq
+    have hqB := q_le_qBound p q e f hp he14 hf3 hf9 hineq
     have hq216 : q ≤ 216 := hqB.trans (qBound_le_216 f hf3 hf9)
     have hp216 : p ≤ 216 := by omega
     exact List.mem_append_right _
