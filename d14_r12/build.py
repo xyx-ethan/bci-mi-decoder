@@ -70,6 +70,15 @@ try:
     text = run(['lake', 'env', 'lean', '-o', str(OUT / 'D14ShortWitness.olean'), 'D14ShortWitness.lean'], 'standalone.log', 300)
     ax = audit(text, ['D14.R5.short_answer', 'D14.R5.exists_odd_witness'])
     assert (OUT / 'D14ShortWitness.olean').stat().st_size > 0
+    bridge = ROOT / 'D14Bridges.lean'
+    bridge_before = digest(bridge)
+    shutil.copy2(bridge, FC / 'D14Bridges.lean')
+    shutil.copy2(bridge, OUT / 'D14Bridges.lean')
+    state['phase'] = 'BRIDGES_COMPILE'; save()
+    text = run(['lake', 'env', 'lean', '-o', str(OUT / 'D14Bridges.olean'), 'D14Bridges.lean'], 'bridges.log', 300)
+    ax.update(audit(text, ['D14.Bridges.maximumExponent_from_primeList', 'D14.Bridges.order_dvd_iff_modEq']))
+    assert (OUT / 'D14Bridges.olean').stat().st_size > 0
+    assert digest(bridge) == bridge_before == digest(OUT / 'D14Bridges.lean')
     original = target.read_text()
     proof = source.read_text().split('theorem short_answer :', 1)[1].split('\ntheorem exists_odd_witness', 1)[0]
     proof = proof.split(':= by\n', 1)[1].rstrip()
@@ -90,7 +99,7 @@ try:
     assert digest(source) == before == digest(OUT / 'D14ShortWitness.lean')
     assert target.read_text() == patched + audit_tail
     (OUT / 'axioms.json').write_text(json.dumps(ax, indent=2) + '\n')
-    state.update(lean_kernel_checked=True, phase='PASS', source_sha256=before,
+    state.update(lean_kernel_checked=True, phase='PASS', source_sha256=before, bridge_sha256=bridge_before,
                  lean_version=version.strip(), upstream_commit=FC_SHA, mathlib_commit=ML_SHA,
                  finished_utc=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()))
     save()
