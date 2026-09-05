@@ -1,5 +1,7 @@
 from pathlib import Path
 import subprocess,sys,json,re,hashlib,shutil,os
+# Audit retrigger: proof source is unchanged; this commit only reruns the pinned kernel
+# after installing the rebuilt parent power object into Lean's library search path.
 R=Path(__file__).resolve().parent;F=Path(sys.argv[1]).resolve();O=R/'evidence';O.mkdir(exist_ok=True)
 state={'passed':False,'run_id':os.getenv('GITHUB_RUN_ID'),'commit':os.getenv('GITHUB_SHA')}
 def save():(O/'status.json').write_text(json.dumps(state,indent=2)+'\n')
