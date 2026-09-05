@@ -46,8 +46,10 @@ theorem p_eq_two_of_f2_solution (p q e : ℕ)
   · exact hp2
   have hqne : q ≠ 2 := by omega
   have hqodd := hq.eq_two_or_odd.resolve_left hqne
-  have hm := congrArg (fun n : ℕ ↦ n % 2) hfix
-  simp [encoded, Nat.add_mod, Nat.mul_mod, Nat.pow_mod, hpodd, hqodd] at hm
+  obtain ⟨u, hu⟩ := hpodd.pow.mul hqodd.pow
+  rw [hu] at hfix
+  unfold encoded at hfix
+  omega
 
 /-- Remove the factor `p^(e-1) ≥ 1` using the positivity of a prime. -/
 theorem qpow_upper (p q e f : ℕ) (hp : p.Prime) (he14 : e ≤ 14)
