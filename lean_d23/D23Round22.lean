@@ -73,12 +73,28 @@ theorem axisBeta_scalar_norm_cases
   rcases haxis with hA | hB
   · subst A
     simp only [normSq, zero_mul, zero_add] at hbeta henergy
-    interval_cases wx <;> interval_cases wy
-    all_goals norm_num [normSq] at hpos hlt ⊢ <;> nlinarith
+    have hBsign : B = p ∨ B = -p := (mul_self_eq_mul_self_iff).mp hbeta
+    rcases hBsign with hBp | hBn
+    · subst B
+      interval_cases wx <;> interval_cases wy
+      all_goals norm_num [normSq] at hpos hlt ⊢
+      all_goals nlinarith [hrespos]
+    · subst B
+      interval_cases wx <;> interval_cases wy
+      all_goals norm_num [normSq] at hpos hlt ⊢
+      all_goals nlinarith [hrespos]
   · subst B
     simp only [normSq, mul_zero, add_zero] at hbeta henergy
-    interval_cases wx <;> interval_cases wy
-    all_goals norm_num [normSq] at hpos hlt ⊢ <;> nlinarith
+    have hAsign : A = p ∨ A = -p := (mul_self_eq_mul_self_iff).mp hbeta
+    rcases hAsign with hAp | hAn
+    · subst A
+      interval_cases wx <;> interval_cases wy
+      all_goals norm_num [normSq] at hpos hlt ⊢
+      all_goals nlinarith [hrespos]
+    · subst A
+      interval_cases wx <;> interval_cases wy
+      all_goals norm_num [normSq] at hpos hlt ⊢
+      all_goals nlinarith [hrespos]
 
 /-- In the axis-β full-rank branch, the round-21 44-point set drops to 32 points. -/
 def axisCandidate : ℤ × ℤ → Bool
