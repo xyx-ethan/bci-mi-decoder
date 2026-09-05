@@ -69,11 +69,12 @@ theorem f_one_equation (p q e : ℕ)
   have hpow : 10 < p^e := by
     by_contra h
     have hm := Nat.mul_le_mul_right q (le_of_not_gt h)
-    nlinarith
+    omega
   have hsub : p^e-10+10=p^e := Nat.sub_add_cancel hpow.le
   constructor
   · exact hpow
-  · nlinarith [hfix]
+  · have hs := congrArg (fun z : ℕ => z*q) hsub
+    nlinarith [hs]
 
 /-- Necessary size window; the exponent is the actual number of decimal digits. -/
 theorem quotient_window (c d q : ℕ) (hq : 0 < q) (hc : 0 < c)
@@ -82,7 +83,7 @@ theorem quotient_window (c d q : ℕ) (hq : 0 < q) (hc : 0 < c)
   let k := (Nat.digits 10 q).length
   have hk : 0 < k := by
     apply (Nat.lt_digits_length_iff (by decide : 1 < (10 : ℕ)) q).2
-    simpa using hq
+    simpa using (show 1 ≤ q by omega)
   have hu : q < (10 : ℕ)^k :=
     (Nat.digits_length_le_iff (by decide : 1 < (10 : ℕ)) q).1 (le_refl _)
   have hl : (10 : ℕ)^(k-1) ≤ q := by

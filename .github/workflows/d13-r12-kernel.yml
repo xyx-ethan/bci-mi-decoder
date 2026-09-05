@@ -42,6 +42,7 @@ jobs:
           retention-days: 30
           path: d13_r12/evidence/
   critical-factors:
+    if: github.run_number == 1
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
