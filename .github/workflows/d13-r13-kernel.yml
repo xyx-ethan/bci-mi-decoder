@@ -26,12 +26,12 @@ jobs:
           git -C "$RUNNER_TEMP/d13-fc" remote add origin https://github.com/google-deepmind/formal-conjectures.git
           git -C "$RUNNER_TEMP/d13-fc" fetch --depth 1 origin 8323e878b83fcd7f4a448256069352a265460d75
           git -C "$RUNNER_TEMP/d13-fc" checkout --detach FETCH_HEAD
-      - name: Rebuild parent and audit actual new bounds
+      - name: Rebuild and audit finite seven-branch theorem
         shell: bash
         run: |
           set -euo pipefail
           unset LEAN_PATH LEAN_SRC_PATH
-          python3 -u d13_r13/verify.py "$RUNNER_TEMP/d13-fc"
+          python3 -u d13_r13/extend.py "$RUNNER_TEMP/d13-fc"
       - name: Preserve exact kernel evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -39,33 +39,3 @@ jobs:
           name: d13-r13-kernel-evidence
           retention-days: 30
           path: d13_r13/evidence/
-  critical-factors:
-    if: github.run_number == 1
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install GMP-ECM
-        run: sudo apt-get update -qq && sudo apt-get install -y gmp-ecm
-      - name: Execute finite modified probe and retain its exact source
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          src=Path('d13_r12/factor_probe.py').read_text()
-          changes={'120000)':'320000)','220000)':'420000)','range(40)':'range(20)','480':'300',"'1000000','100000000'":"'3000000','300000000'", "'B1':1000000,'B2':100000000":"'B1':3000000,'B2':300000000"}
-          for a,b in changes.items():
-              assert a in src,a
-              src=src.replace(a,b)
-          Path('d13_r13/factor_probe_actual.py').write_text(src)
-          PY
-          python3 -u d13_r13/factor_probe_actual.py
-          cp d13_r13/factor_probe_actual.py factor_evidence/
-      - name: Preserve completed and partial curves
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: d13-r13-factor-evidence
-          retention-days: 30
-          path: factor_evidence/
