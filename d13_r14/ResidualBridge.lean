@@ -11,7 +11,7 @@ theorem pow_mod_period (M b m k : ℕ) (hm : 0 < m)
   have hdecomp : k % m + m * (k / m) = k := Nat.mod_add_div k m
   have hp : Nat.ModEq M ((b^m)^(k/m)) 1 := by
     simpa only [one_pow] using Nat.ModEq.pow (k/m) hper
-  rw [← hdecomp, pow_add, pow_mul]
+  conv_lhs => rw [← hdecomp, pow_add, pow_mul]
   simpa only [mul_one] using (Nat.ModEq.refl (b^(k%m))).mul hp
 
 theorem q1_exponent_residue (k : ℕ)
@@ -27,8 +27,9 @@ theorem q1_exponent_residue (k : ℕ)
   have hz : Nat.ModEq 797 (740*10^(k%199)+1) 0 := hred.symm.trans hzero
   let s := k % 199
   have hs : s < 199 := Nat.mod_lt _ (by decide)
+  change (740 * 10^s + 1) % 797 = 0 at hz
   change s = 136
-  interval_cases s <;> norm_num [Nat.ModEq] at hz ⊢
+  interval_cases s <;> norm_num at hz ⊢
 
 theorem q2_exponent_mod_six (k : ℕ)
     (hdiv : 2177 ∣ 370*10^k+1) : k % 6 = 0 := by
@@ -42,8 +43,9 @@ theorem q2_exponent_mod_six (k : ℕ)
   have hz : Nat.ModEq 7 (370*10^(k%6)+1) 0 := hred.symm.trans hzero
   let s := k % 6
   have hs : s < 6 := Nat.mod_lt _ (by decide)
+  change (370 * 10^s + 1) % 7 = 0 at hz
   change s = 0
-  interval_cases s <;> norm_num [Nat.ModEq] at hz ⊢
+  interval_cases s <;> norm_num at hz ⊢
 
 theorem q2_exponent_mod_155 (k : ℕ)
     (hdiv : 2177 ∣ 370*10^k+1) : k % 155 = 46 := by
@@ -57,8 +59,9 @@ theorem q2_exponent_mod_155 (k : ℕ)
   have hz : Nat.ModEq 311 (370*10^(k%155)+1) 0 := hred.symm.trans hzero
   let s := k % 155
   have hs : s < 155 := Nat.mod_lt _ (by decide)
+  change (370 * 10^s + 1) % 311 = 0 at hz
   change s = 46
-  interval_cases s <;> norm_num [Nat.ModEq] at hz ⊢
+  interval_cases s <;> norm_num at hz ⊢
 
 theorem q2_exponent_residue (k : ℕ)
     (hdiv : 2177 ∣ 370*10^k+1) : k % 930 = 666 := by
@@ -90,7 +93,7 @@ theorem f_one_fixed_to_residual (p q e : ℕ)
     have hq1 := D13.r9_q1_exact t
     rw [hk] at hEq
     have hm : 2391*q = 2391*D13.q1 t := hEq.trans hq1.symm
-    have hqq : q=D13.q1 t := Nat.eq_of_mul_eq_mul_left hm
+    have hqq : q=D13.q1 t := Nat.eq_of_mul_eq_mul_left (by decide : 0 < 2391) hm
     exact Or.inl ⟨t,rfl,rfl,hqq⟩
   · rcases h with ⟨rfl,rfl⟩
     have hEq := (D13.R12.f_one_equation 3 q 7 hp hq hpq (by decide) hfix).2
@@ -105,7 +108,7 @@ theorem f_one_fixed_to_residual (p q e : ℕ)
     have hq2 := D13.r9_q2_exact t
     rw [hk] at hEq
     have hm : 2177*q = 2177*D13.q2 t := hEq.trans hq2.symm
-    have hqq : q=D13.q2 t := Nat.eq_of_mul_eq_mul_left hm
+    have hqq : q=D13.q2 t := Nat.eq_of_mul_eq_mul_left (by decide : 0 < 2177) hm
     exact Or.inr ⟨t,rfl,rfl,hqq⟩
 
 /-- Exact classification of existence in the entire f=1 two-prime branch. -/
