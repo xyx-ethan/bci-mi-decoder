@@ -33,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           unset LEAN_PATH LEAN_SRC_PATH
-          python3 -u d13_r18/strict_build_v2.py "$RUNNER_TEMP/d13-fc"
+          python3 -u d13_r18/strict_build_v3.py "$RUNNER_TEMP/d13-fc"
       - name: Preserve exact strict-build evidence
         if: always()
         uses: actions/upload-artifact@v4
