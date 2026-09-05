@@ -15,13 +15,15 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Set up pinned Lean
-        uses: leanprover/lean-action@v1
-        with:
-          lake-package-directory: lean_d23
-          auto-config: false
-          build: false
-          use-mathlib-cache: true
+      - name: Install elan and pinned Lean
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain leanprover/lean4:v4.33.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Verify toolchain
+        run: |
+          lean --version
+          lake --version
       - name: Resolve pinned dependencies
         working-directory: lean_d23
         run: |
