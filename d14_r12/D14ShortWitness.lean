@@ -1,7 +1,7 @@
-/- D14 R5. Short proof candidate: NOT COMPILED in this release.
+/- D14 exact odd witness. See the accompanying CI evidence for verification status.
 Imports and uses the original upstream definition, without redefining it.
 -/
-import FormalConjectures.OEIS.51903
+import FormalConjectures.OEIS.«51903»
 
 namespace D14.R5
 open OeisA51903

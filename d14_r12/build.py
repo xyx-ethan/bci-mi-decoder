@@ -55,7 +55,10 @@ try:
     run(['lake', '--version'], 'lake_version.log')
     run(['lake', 'exe', 'cache', 'get'], 'cache.log')
     assert run(['git', '-C', '.lake/packages/mathlib', 'rev-parse', 'HEAD'], 'mathlib_commit.log').strip() == ML_SHA
-    run(['lake', 'build', 'FormalConjectures.OEIS.51903'], 'dependency_build.log')
+    run(['lake', '-v', 'build', '+FormalConjecturesUtil'], 'dependency_build.log')
+    original_olean = FC / '.lake/build/lib/lean/FormalConjectures/OEIS/51903.olean'
+    original_olean.parent.mkdir(parents=True, exist_ok=True)
+    run(['lake', 'env', 'lean', '-o', str(original_olean), 'FormalConjectures/OEIS/51903.lean'], 'original_module.log', 300)
     shutil.copy2(target, OUT / '51903.original.lean')
     shutil.copy2(FC / 'lake-manifest.json', OUT / 'lake-manifest.json')
     shutil.copy2(FC / 'lean-toolchain', OUT / 'lean-toolchain')
