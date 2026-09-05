@@ -1,6 +1,7 @@
 import D13R9Numbers
 import FormalConjectures.OEIS.«67599»
 
+/-! Exact reconstruction through the upstream prime-factor-list encoding. -/
 namespace D13.R9
 
 /-- Recover the ordered prime factor list, not just a product identity. -/
@@ -13,7 +14,7 @@ theorem factors_from_sorted (n : ℕ) (l : List ℕ)
 theorem factors7 (q : ℕ) (hq : q.Prime) (h7 : 7 < q) :
     ((7 : ℕ)^4 * q).primeFactorsList = [7,7,7,7,q] := by
   apply factors_from_sorted
-  · norm_num <;> ring
+  · norm_num; ring
   · have hp : Nat.Prime 7 := by norm_num
     simp_all
   · simp [List.pairwise_cons, le_of_lt h7]
@@ -21,7 +22,7 @@ theorem factors7 (q : ℕ) (hq : q.Prime) (h7 : 7 < q) :
 theorem factors3 (q : ℕ) (hq : q.Prime) (h3 : 3 < q) :
     ((3 : ℕ)^7 * q).primeFactorsList = [3,3,3,3,3,3,3,q] := by
   apply factors_from_sorted
-  · norm_num <;> ring
+  · norm_num; ring
   · have hp : Nat.Prime 3 := by norm_num
     simp_all
   · simp [List.pairwise_cons, le_of_lt h3]
@@ -34,7 +35,8 @@ theorem encoding7 (q : ℕ) (hq : q.Prime) (h7 : 7 < q) :
   have hne' : 7 ≠ q := ne_of_lt h7
   unfold OeisA67599.a
   rw [if_neg hn, factors7 q hq h7]
-  norm_num [OeisA67599.concatenateNats, List.dedup, hne, hne'] <;> ring
+  norm_num [OeisA67599.concatenateNats, List.dedup, List.pwFilter, hne, hne']
+  ring
 
 theorem encoding3 (q : ℕ) (hq : q.Prime) (h3 : 3 < q) :
     OeisA67599.a ((3 : ℕ)^7 * q) =
@@ -44,7 +46,8 @@ theorem encoding3 (q : ℕ) (hq : q.Prime) (h3 : 3 < q) :
   have hne' : 3 ≠ q := ne_of_lt h3
   unfold OeisA67599.a
   rw [if_neg hn, factors3 q hq h3]
-  norm_num [OeisA67599.concatenateNats, List.dedup, hne, hne'] <;> ring
+  norm_num [OeisA67599.concatenateNats, List.dedup, List.pwFilter, hne, hne']
+  ring
 
 /-- A quotient equation determines the exact decimal digit length. -/
 theorem digits_of_equation (c d k q : ℕ)
