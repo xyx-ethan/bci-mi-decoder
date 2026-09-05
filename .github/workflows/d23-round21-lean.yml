@@ -1,0 +1,47 @@
+name: D23 Round21 Lean audit
+
+on:
+  push:
+    branches:
+      - d23-round21-lean-audit-20260905
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  strict-lean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up pinned Lean
+        uses: leanprover/lean-action@v1
+        with:
+          lake-package-directory: lean_d23
+          auto-config: false
+          build: false
+          use-mathlib-cache: true
+      - name: Resolve pinned dependencies
+        working-directory: lean_d23
+        run: |
+          lake update
+          lake exe cache get
+      - name: Exact required strict build
+        working-directory: lean_d23
+        run: lake --wfail build
+      - name: Print and reject forbidden axioms
+        working-directory: lean_d23
+        run: |
+          set -o pipefail
+          lake env lean AxiomAudit.lean | tee axiom-audit.log
+          if grep -E 'sorryAx|Lean\.ofReduceBool|Lean\.trustCompiler' axiom-audit.log; then
+            echo 'forbidden axiom detected'
+            exit 1
+          fi
+      - name: Reject forbidden source constructs
+        run: |
+          if grep -R -n -E '\b(sorry|admit|axiom|unsafe|native_decide)\b' lean_d23 --include='*.lean'; then
+            echo 'forbidden Lean source token detected'
+            exit 1
+          fi
