@@ -33,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           unset LEAN_PATH LEAN_SRC_PATH
-          python3 -u d13_r8/run.py "$RUNNER_TEMP/d13-fc"
+          python3 -u d13_r8/repair.py "$RUNNER_TEMP/d13-fc"
       - name: Save source, object, certificate and log evidence
         if: always()
         uses: actions/upload-artifact@v4
