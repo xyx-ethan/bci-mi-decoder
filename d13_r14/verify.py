@@ -22,6 +22,11 @@ try:
  save()
  call([sys.executable,str(R.parent/'d13_r13/finish.py'),str(F)],'parent.log')
  P=R.parent/'d13_r13/evidence';ps=json.loads((P/'status.json').read_text());assert ps['power_passed']
+ # finish.py writes the certified power module into its evidence directory rather
+ # than the upstream library search path. Install that exact rebuilt object before
+ # compiling ResidualBridge.lean. This is plumbing only: no proof source changes.
+ lib=F/'.lake/build/lib/lean';lib.mkdir(parents=True,exist_ok=True)
+ shutil.copy2(P/'D13R13Power.olean',lib/'D13R13Power.olean')
  source=(R/'ResidualBridge.lean').read_text();names=['D13.R14.'+n for n in re.findall(r'^theorem (\w+)',source,re.M)]
  for bad in ['sorry','admit','native_decide','set_option maxRecDepth','axiom ']:assert bad not in source
  source+='\n'+'\n'.join('#print axioms '+n for n in names)+'\n'
