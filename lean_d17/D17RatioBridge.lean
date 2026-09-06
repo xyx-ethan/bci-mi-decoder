@@ -25,15 +25,17 @@ def BranchN (x y z : ℕ) : ℕ := 2^17 * x^4 * y^3 * z^3
 
 theorem usigma_prime_pow_three {p : ℕ} (hp : p.Prime) :
     usigma (p ^ 3) = 1 + p ^ 3 := by
-  simp [usigma, unitaryDivisors, Nat.divisors_prime_pow hp, Finset.range_succ, hp.ne_one]
+  simp [usigma, unitaryDivisors, Nat.divisors_prime_pow hp, Finset.range_add_one,
+    Nat.coprime_pow_left_iff, Nat.coprime_pow_right_iff, hp.ne_one]
 
 theorem usigma_prime_pow_four {p : ℕ} (hp : p.Prime) :
     usigma (p ^ 4) = 1 + p ^ 4 := by
-  simp [usigma, unitaryDivisors, Nat.divisors_prime_pow hp, Finset.range_succ, hp.ne_one]
+  simp [usigma, unitaryDivisors, Nat.divisors_prime_pow hp, Finset.range_add_one,
+    Nat.coprime_pow_left_iff, Nat.coprime_pow_right_iff, hp.ne_one]
 
 theorem usigma_two_pow_seventeen :
     usigma (2 ^ 17) = 1 + 2 ^ 17 := by
-  simp [usigma, unitaryDivisors, Nat.divisors_prime_pow Nat.prime_two, Finset.range_succ]
+  norm_num [usigma, unitaryDivisors]
 
 theorem sigma_prime_pow_three {p : ℕ} (hp : p.Prime) :
     ArithmeticFunction.sigma 1 (p ^ 3) = (p + 1) * (p^2 + 1) := by
