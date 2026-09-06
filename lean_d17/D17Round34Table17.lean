@@ -41,7 +41,7 @@ theorem killedTableB_17 : killedTableB 17 =
     false, false, false, false, false, true, false, true, false, false, false, true, false, false, true, false, false,
     false, false, false, false, false, true, false, true, false, false, false, true, false, false, true, false, false,
     false, false, false, false, false, true, false, true, false, false, false, true, false, false, true, false, false,
-    false, false, false, false, false, true, false, true, false, false, false, true, false, false, true, false, false
+    false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
 ] := by
   decide
 
