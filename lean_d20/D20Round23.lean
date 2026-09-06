@@ -64,7 +64,12 @@ theorem ame8_6_fourPrefix_has_nonzero_completion_perm
   by_contra h
   push Not at h
   have hzero : fourBlockMass ψ π x = 0 := by
-    simp [fourBlockMass, basisProb, h]
+    rw [fourBlockMass]
+    apply Finset.sum_eq_zero
+    intro z hz
+    unfold basisProb
+    rw [h z]
+    simp
   have hunif := ame8_6_fourBlockMass_uniform ψ hψ π x
   rw [hzero] at hunif
   norm_num at hunif
