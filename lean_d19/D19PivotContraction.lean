@@ -70,6 +70,8 @@ lemma allEqual_extend_iff (a b : Fin 3) (ι : Fin 6 → Fin 3) :
   simp [allEqual, allEqualList, vertices, extendColor]
 
 /-- Exact fixed-size contraction identity for the three-active-residual-vertex branch. -/
+set_option maxHeartbeats 2000000 in
+set_option linter.unusedSimpArgs false in
 theorem contracted_pmSum_eq_extension_sum
     (W : WeightsN 8 3 ℂ)
     (hs : pivotSum W ≠ 0)
@@ -109,7 +111,8 @@ theorem eqSystem6_of_eqSystem8_threeActivePivot
   rw [contracted_pmSum_eq_extension_sum W hs hactive ι]
   simp_rw [hW]
   by_cases hι : allEqual ι
-  · simp [allEqual_extend_iff, hι]
+  · fin_cases h0 : ι 0 <;>
+      simp [allEqual_extend_iff, hι, h0, Fin.sum_univ_succ]
   · simp [allEqual_extend_iff, hι]
 
 /-- Assuming the known six-vertex nonexistence proposition, the three-active pivot branch is empty. -/
