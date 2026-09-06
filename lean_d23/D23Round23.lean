@@ -16,10 +16,9 @@ theorem inertPrime_beta_axis
     (hmod : p % 4 = 3)
     (hbeta : normSq A B = (p : ℤ) * (p : ℤ)) :
     A = 0 ∨ B = 0 := by
-  letI : Fact p.Prime := ⟨hp⟩
   let z : ℤ[i] := ⟨A, B⟩
   have hpi : Prime (p : ℤ[i]) :=
-    GaussianInt.prime_of_nat_prime_of_mod_four_eq_three p hmod
+    @GaussianInt.prime_of_nat_prime_of_mod_four_eq_three p ⟨hp⟩ hmod
   have hnorm : z.norm = (p : ℤ) * (p : ℤ) := by
     simp [z, Zsqrtd.norm, normSq] at hbeta ⊢
     exact hbeta
@@ -59,7 +58,7 @@ theorem inertPrime_beta_axis
     nlinarith
   have hcoord : w.re = 0 ∨ w.im = 0 := by
     by_contra h
-    push_neg at h
+    push Not at h
     have hrepos : 0 < w.re * w.re := mul_self_pos.mpr h.1
     have himpos : 0 < w.im * w.im := mul_self_pos.mpr h.2
     have hreone : 1 ≤ w.re * w.re := by omega
