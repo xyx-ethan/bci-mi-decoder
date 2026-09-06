@@ -9,3 +9,15 @@ rev = "8323e878b83fcd7f4a448256069352a265460d75"
 
 [[lean_lib]]
 name = "D19Round20"
+roots = [
+  "PMTree6",
+  "PMTree8Branch1",
+  "PMTree8Branch2",
+  "PMTree8Branch3",
+  "PMTree8Branch4",
+  "PMTree8Branch5",
+  "PMTree8Branch6",
+  "PMTree8Branch7",
+  "PMTree8",
+  "D19Round20"
+]
