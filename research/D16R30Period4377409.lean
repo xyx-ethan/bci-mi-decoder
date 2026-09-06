@@ -105,9 +105,7 @@ theorem u_period : u ^ period = 1 := by
   calc
     u ^ period = (w ^ 4) ^ period := by rw [hw4]
     _ = w ^ (4 * period) := by rw [← pow_mul]
-    _ = w ^ (modulus - 1) := by
-          congr 1
-          norm_num [period, modulus]
+    _ = w ^ (modulus - 1) := by norm_num [period, modulus]
     _ = 1 := ZMod.pow_card_sub_one_eq_one hw0
 
 theorem v_period : v ^ period = 1 := by
@@ -121,9 +119,7 @@ theorem v_period : v ^ period = 1 := by
   calc
     v ^ period = (w ^ 4) ^ period := by rw [hw4]
     _ = w ^ (4 * period) := by rw [← pow_mul]
-    _ = w ^ (modulus - 1) := by
-          congr 1
-          norm_num [period, modulus]
+    _ = w ^ (modulus - 1) := by norm_num [period, modulus]
     _ = 1 := ZMod.pow_card_sub_one_eq_one hw0
 
 theorem eq_of_plus_minus {z w : R × R}
