@@ -1,0 +1,99 @@
+name: D16 R35 p112-period kernel gate
+
+on:
+  push:
+    branches:
+      - d16-r35-p112-period-ci
+
+permissions:
+  contents: read
+
+jobs:
+  kernel-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Clone pinned Formal Conjectures
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/google-deepmind/formal-conjectures.git fc
+          cd fc
+          git checkout 8323e878b83fcd7f4a448256069352a265460d75
+          test "$(git rev-parse HEAD)" = "8323e878b83fcd7f4a448256069352a265460d75"
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.33.1"
+          grep -q '0df444a360eaa60ab8c11dca51a86af692955474' lake-manifest.json
+          sha256sum FormalConjectures/OEIS/67720.lean lean-toolchain lake-manifest.json
+
+      - name: Inject pinned D16 R35 certificate
+        run: |
+          set -euxo pipefail
+          cd fc
+          mkdir -p FormalConjectures/Research
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/220d63d80a4f9d9c6c6d4f90d0872df0d6579a89/research/D16R35P112Period.lean \
+            -o FormalConjectures/Research/D16R35P112Period.lean
+          sha256sum FormalConjectures/Research/D16R35P112Period.lean
+          ! grep -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' FormalConjectures/Research/D16R35P112Period.lean
+
+      - name: Install elan exactly as upstream
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v1.4.2/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch pinned mathlib olean cache
+        run: |
+          set -euxo pipefail
+          cd fc
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Focused kernel compile
+        run: |
+          set -euxo pipefail
+          cd fc
+          set -o pipefail
+          lake env lean FormalConjectures/Research/D16R35P112Period.lean 2>&1 | tee /tmp/d16_r35_focus.log
+          echo D16_R35_FOCUSED_KERNEL_PASS
+
+      - name: Generate aggregate files
+        run: |
+          set -euxo pipefail
+          cd fc
+          ./scripts/mk_all_formathlib.sh
+          rm -f FormalConjectures/All.lean
+          lake exe mk_all --lib FormalConjectures || true
+          mv FormalConjectures.lean FormalConjectures/All.lean
+          echo "set_option linter.style.moduleDocstring false" >> FormalConjectures/All.lean
+
+      - name: Full warning-free project build
+        run: |
+          set -euxo pipefail
+          cd fc
+          set -o pipefail
+          lake --wfail build 2>&1 | tee /tmp/d16_r35_lake_wfail_build.log
+          echo D16_R35_LAKE_WFAIL_BUILD_PASS
+
+      - name: Kernel axiom audit
+        run: |
+          set -euxo pipefail
+          cd fc
+          cat > AuditD16R35.lean <<'LEAN'
+          import FormalConjectures.Research.D16R35P112Period
+          #print axioms D16R35P112Period.s_sq
+          #print axioms D16R35P112Period.alpha_period
+          #print axioms D16R35P112Period.beta_period
+          #print axioms D16R35P112Period.u_closed
+          #print axioms D16R35P112Period.v_closed
+          #print axioms D16R35P112Period.p_cast_progression
+          #print axioms D16R35P112Period.p112_cast_zero
+          #print axioms D16R35P112Period.modulus_dvd_progression
+          #print axioms D16R35P112Period.p_monotone
+          #print axioms D16R35P112Period.modulus_lt_progression
+          #print axioms D16R35P112Period.not_prime_progression
+          LEAN
+          set -o pipefail
+          lake env lean AuditD16R35.lean 2>&1 | tee /tmp/d16_r35_axioms.log
+          ! grep -E 'sorryAx|native_decide\.ax|Lean\.ofReduceBool|Lean\.trustCompiler' /tmp/d16_r35_axioms.log
+          echo D16_R35_AXIOM_AUDIT_PASS
