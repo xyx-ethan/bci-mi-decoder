@@ -1,0 +1,52 @@
+name: D16 R30 period4377409 focused kernel
+
+on:
+  push:
+    branches:
+      - d16-r30-period4377409-ci
+
+permissions:
+  contents: read
+
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Clone pinned Formal Conjectures
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/google-deepmind/formal-conjectures.git fc
+          cd fc
+          git checkout 8323e878b83fcd7f4a448256069352a265460d75
+          test "$(git rev-parse HEAD)" = "8323e878b83fcd7f4a448256069352a265460d75"
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.33.1"
+          grep -q '0df444a360eaa60ab8c11dca51a86af692955474' lake-manifest.json
+      - name: Inject exact source
+        run: |
+          set -euxo pipefail
+          cd fc
+          mkdir -p FormalConjectures/Research
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/1bd8d2b3715bf4941614c22eb41aad076eae3807/research/D16R30Period4377409.lean -o FormalConjectures/Research/D16R30Period4377409.lean
+          sha256sum FormalConjectures/Research/D16R30Period4377409.lean
+          ! grep -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' FormalConjectures/Research/D16R30Period4377409.lean
+      - name: Install elan
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v1.4.2/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Fetch cache
+        run: |
+          set -euxo pipefail
+          cd fc
+          lean --version
+          lake --version
+          lake exe cache get
+      - name: Focused kernel compile
+        run: |
+          set -euxo pipefail
+          cd fc
+          set -o pipefail
+          lake env lean FormalConjectures/Research/D16R30Period4377409.lean 2>&1 | tee /tmp/d16_r30_focus.log
+          echo D16_R30_FOCUSED_KERNEL_PASS
