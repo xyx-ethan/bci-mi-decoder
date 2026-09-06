@@ -47,6 +47,13 @@ theorem q2_formula : q2 0 = q2Critical := by
 assert source.count(old_formula) == 1
 source = source.replace(old_formula, new_formula)
 
+# `norm_num` deliberately evaluates the two decimal-power identities exactly.
+# The largest exponent is 733, so raise only this evaluator guard; this is not
+# a heartbeat or recursion bypass and the resulting proof terms remain kernel checked.
+anchor = "set_option maxHeartbeats 0\n"
+assert source.count(anchor) == 1
+source = source.replace(anchor, anchor + "set_option exponentiation.threshold 1000\n", 1)
+
 for forbidden in ["sorry", "admit", "native_decide", "Lean.ofReduceBool", "Lean.trustCompiler", "unsafe", "axiom "]:
     assert forbidden not in source, forbidden
 
