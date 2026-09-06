@@ -233,7 +233,9 @@ theorem base120_zero : ((D16R34P112.pell 120).1 : R) = 0 := by
   have h2 : (2 : R) * ((D16R34P112.pell 120).1 : R) = 0 := by
     linear_combination hX - hEq
   apply mul_left_cancel₀ (a := (2 : R)) two_ne_zero
-  simpa using h2
+  calc
+    (2 : R) * _ = 0 := h2
+    _ = (2 : R) * 0 := by ring
 
 /-- The second base p-coordinate is zero modulo the divisor. -/
 theorem base5198_zero : ((D16R34P112.pell 5198).1 : R) = 0 := by
@@ -246,7 +248,9 @@ theorem base5198_zero : ((D16R34P112.pell 5198).1 : R) = 0 := by
   have h2 : (2 : R) * ((D16R34P112.pell 5198).1 : R) = 0 := by
     linear_combination hX - hEq
   apply mul_left_cancel₀ (a := (2 : R)) two_ne_zero
-  simpa using h2
+  calc
+    (2 : R) * _ = 0 := h2
+    _ = (2 : R) * 0 := by ring
 
 /-- Every index in the first progression is divisible by `modulus`. -/
 theorem progression120_dvd (t : ℕ) :
