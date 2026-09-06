@@ -4,9 +4,9 @@ import D17Round31ModularSoundness
 # D17 Round 32: first complete modular table in the Lean kernel
 
 This file turns the Round-31 logical modular-filter bridge into an executable,
-kernel-reducible Boolean checker.  It then checks the complete `11 × 11`
-residue table used by the Round-28 cover and proves that exactly 82 residue
-pairs are killed.
+kernel-reducible Boolean checker. It then checks every entry of the complete
+`11 × 11` residue table used by the Round-28 cover and proves that exactly 82
+of its 121 ordered residue pairs are killed.
 -/
 
 namespace D17Round32
@@ -44,6 +44,11 @@ theorem no_A_of_killedByB {m p q r : ℕ} [NeZero m]
   no_A_of_killedBy hp hq hr h2p hpq hqr
     (killedByB_sound m p q hkill)
 
+/-- Row-major Boolean residue table. -/
+def killedTableB (m : ℕ) [NeZero m] : List Bool :=
+  (List.range m).flatMap fun p =>
+    (List.range m).map fun q => killedByB m p q
+
 /-- Convert a Boolean table entry to its counting weight. -/
 def boolWeight : Bool → ℕ
   | false => 0
@@ -56,8 +61,24 @@ def killedCountB (m : ℕ) [NeZero m] : ℕ :=
       total + (List.range m).foldl
         (fun subtotal q => subtotal + boolWeight (killedByB m p q)) 0) 0
 
-/-- The first complete filter table: 82 of the 121 ordered residue pairs
-modulo 11 have non-square discriminant. -/
+/-- Complete row-major table for modulus 11. This theorem checks all 121 cells
+in the kernel, not merely their total cardinality. -/
+theorem killedTableB_11 : killedTableB 11 =
+    [false, false, true, true, true, true, true, true, true, true, false,
+     false, false, true, true, true, true, true, true, true, true, false,
+     false, true, true, true, true, true, true, true, true, true, false,
+     false, false, true, true, true, true, true, true, true, true, false,
+     false, false, true, true, true, true, true, true, true, true, false,
+     false, false, true, true, true, true, true, true, true, true, false,
+     false, true, true, true, true, true, true, true, true, true, false,
+     false, false, true, true, true, true, true, true, true, true, false,
+     false, false, true, true, true, true, true, true, true, true, false,
+     false, false, true, true, true, true, true, true, true, true, false,
+     false, false, false, false, false, false, false, false, false, false,
+       false] := by
+  decide
+
+/-- The first complete filter table has 82 killed and 39 allowed cells. -/
 theorem killedCountB_11 : killedCountB 11 = 82 := by
   decide
 
@@ -76,6 +97,7 @@ theorem killedCountB_11_not_complement : killedCountB 11 ≠ 39 := by
 
 #print axioms killedByB_sound
 #print axioms no_A_of_killedByB
+#print axioms killedTableB_11
 #print axioms killedCountB_11
 #print axioms killedByB_11_0_2
 #print axioms killedByB_11_0_0
