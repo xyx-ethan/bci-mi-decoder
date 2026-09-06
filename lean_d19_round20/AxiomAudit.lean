@@ -4,3 +4,7 @@ import D19Round20
 #print axioms D19Round20.rawZeroStar_implies_zeroStar
 #print axioms D19Round20.rawZeroStar_forces_allCanonical
 #print axioms D19Round20.pmSumN_pivotStarContract
+#print axioms D19Round20.allEqual_extendColor_iff
+#print axioms D19Round20.sum_extendColor_indicator
+#print axioms D19Round20.eqSystemN_pivotStarContract
+#print axioms D19Round20.no_eight_pivotStar_of_no_six
