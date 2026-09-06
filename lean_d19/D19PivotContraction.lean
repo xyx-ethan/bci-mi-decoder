@@ -1,6 +1,15 @@
 import FormalConjectures.Paper.MonochromaticQuantumGraph
 
+/-!
+# D19 pivot contraction on the three-active-residual-vertex branch
+
+A fixed-size algebraic bridge from a constrained eight-vertex solution to the official
+six-vertex equation system.
+-/
+
 open scoped BigOperators
+
+noncomputable section
 
 namespace D19PivotContraction
 
@@ -81,11 +90,11 @@ theorem contracted_pmSum_eq_extension_sum
     (hactive 5 (by norm_num) c).1
   have hB5 (c : Fin 3) : rightLeg W (5 : Fin 6) c = 0 :=
     (hactive 5 (by norm_num) c).2
-  simp [pmSumN, pmSumList, pmSumListAux, vertices, contractedWeight,
-    updatedWeight, residualWeight, pivotUpdate, hA3, hB3, hA4, hB4, hA5, hB5,
-    pivotSum, leftLeg, rightLeg, liftResidual, extendColor, Fin.sum_univ_succ]
-  field_simp [hs]
-  ring
+  simp [pmSumN, pmSumList, pmSumListAux, vertices]
+  simp [contractedWeight, updatedWeight, residualWeight, pivotUpdate, liftResidual,
+    hA3, hB3, hA4, hB4, hA5, hB5]
+  simp [pivotSum, leftLeg, rightLeg, extendColor, Fin.sum_univ_succ]
+  field_simp [hs] <;> ring
 
 /-- A solution on eight vertices in this branch contracts to a six-vertex solution. -/
 theorem eqSystem6_of_eqSystem8_threeActivePivot
@@ -95,6 +104,7 @@ theorem eqSystem6_of_eqSystem8_threeActivePivot
     (hactive : ThreeActivePivot W) :
     EqSystemN 6 3 (contractedWeight W) := by
   classical
+  unfold EqSystemN at hW ⊢
   intro ι
   rw [contracted_pmSum_eq_extension_sum W hs hactive ι]
   simp_rw [hW]
