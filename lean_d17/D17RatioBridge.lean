@@ -138,14 +138,17 @@ theorem unitaryDivisors_prime_pow {p k : ℕ} (hp : p.Prime) (hk : k ≠ 0) :
     exact hp.ne_one hp1
   · rintro (rfl | rfl)
     · simp [unitaryDivisors, hp.ne_zero]
-    · have hpk0 : p ^ k ≠ 0 := pow_ne_zero k hp.ne_zero
-      simp [unitaryDivisors, hp.ne_zero, hpk0, Nat.div_self hpk0]
+    · have hpkpos : 0 < p ^ k := pow_pos hp.pos k
+      have hdivself : p ^ k / p ^ k = 1 := Nat.div_self hpkpos
+      simp [unitaryDivisors, hp.ne_zero, hdivself]
 
 theorem usigma_prime_pow {p k : ℕ} (hp : p.Prime) (hk : k ≠ 0) :
     usigma (p ^ k) = 1 + p ^ k := by
   have hpk1 : p ^ k ≠ 1 := (one_lt_pow₀ hp.one_lt hk).ne'
   rw [usigma, unitaryDivisors_prime_pow hp hk]
-  simp [hpk1]
+  rw [Finset.sum_insert]
+  · simp
+  · simpa [eq_comm] using hpk1
 
 theorem usigma_prime_pow_three {p : ℕ} (hp : p.Prime) :
     usigma (p ^ 3) = 1 + p ^ 3 := by
