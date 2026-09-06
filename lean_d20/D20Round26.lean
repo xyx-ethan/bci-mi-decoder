@@ -31,10 +31,12 @@ theorem exists_tripleDegree_le_one
     (I : Fin 15 → Fin 23 → ℕ)
     (hrow : ∀ p : Fin 15, ∑ x : Fin 23, I p x = 3) :
     ∃ x : Fin 23, tripleDegree I x ≤ 1 := by
-  by_contra h
-  push Not at h
+  by_contra hnone
   have hdeg : ∀ x : Fin 23, 2 ≤ tripleDegree I x := by
     intro x
+    have hxnot : ¬ tripleDegree I x ≤ 1 := by
+      intro hx
+      exact hnone ⟨x, hx⟩
     omega
   have hlower : 46 ≤ ∑ x : Fin 23, tripleDegree I x := by
     calc
