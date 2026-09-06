@@ -1,0 +1,135 @@
+name: D13 R25 critical residual bridge
+
+on:
+  push:
+    branches: [research/d13-r25-critical-bridge]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  strict:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate inherited exact Fermat certificate source
+        working-directory: lean_d13critical
+        run: |
+          set -euo pipefail
+          python3 generate.py | tee generation.log
+          python3 finalize_generated.py | tee finalize.log
+          test -s D13CriticalFermat.lean
+          test -s D13CriticalBridge.lean
+          test -s AxiomAudit.lean
+          test -s BridgeAxiomAudit.lean
+          test -s certificate.json
+
+      - name: Run two independent Fermat and bridge checkers
+        working-directory: lean_d13critical
+        run: |
+          set -euo pipefail
+          python3 verify_python.py | tee python_fermat.log
+          javac VerifyCritical.java
+          java VerifyCritical | tee java_fermat.log
+          python3 verify_bridge.py | tee python_bridge.log
+          javac VerifyBridge.java
+          java VerifyBridge | tee java_bridge.log
+
+      - name: Install verified Lean 4.33.1
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 2 https://github.com/leanprover/lean4/releases/download/v4.33.1/lean-4.33.1-linux.tar.zst -o "$RUNNER_TEMP/lean.tar.zst"
+          echo "890afd185370f85666025b883914ab4f4b339136f8c96167b69cfb62aecaf235  $RUNNER_TEMP/lean.tar.zst" | sha256sum -c -
+          mkdir "$RUNNER_TEMP/lean"
+          tar --zstd -xf "$RUNNER_TEMP/lean.tar.zst" -C "$RUNNER_TEMP/lean" --strip-components=1
+          rm "$RUNNER_TEMP/lean.tar.zst"
+          echo "$RUNNER_TEMP/lean/bin" >> "$GITHUB_PATH"
+
+      - name: Verify pinned toolchain
+        run: |
+          lean --version
+          lake --version
+
+      - name: Resolve pinned dependencies
+        working-directory: lean_d13critical
+        run: |
+          set -euo pipefail
+          lake update
+          lake exe cache get
+
+      - name: Exact strict Lake build
+        working-directory: lean_d13critical
+        run: |
+          set -o pipefail
+          lake --wfail build 2>&1 | tee lake_wfail_build.log
+
+      - name: Print and audit every theorem dependency
+        working-directory: lean_d13critical
+        run: |
+          set -o pipefail
+          lake env lean AxiomAudit.lean 2>&1 | tee fermat_axiom_audit.log
+          lake env lean BridgeAxiomAudit.lean 2>&1 | tee bridge_axiom_audit.log
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          total = 0
+          for audit_file, log_file, expected in [
+              ('AxiomAudit.lean', 'fermat_axiom_audit.log', 18),
+              ('BridgeAxiomAudit.lean', 'bridge_axiom_audit.log', 10),
+          ]:
+              text = Path(log_file).read_text()
+              names = [line.split()[-1] for line in Path(audit_file).read_text().splitlines()
+                       if line.startswith('#print axioms ')]
+              assert len(names) == expected, (audit_file, len(names), expected)
+              for name in names:
+                  m = re.search(r"'" + re.escape(name) + r"' depends on axioms:\s*\[([^\]]*)\]", text, re.S)
+                  z = re.search(r"'" + re.escape(name) + r"' does not depend on any axioms", text)
+                  assert bool(m) ^ bool(z), (name, bool(m), bool(z))
+                  deps = set() if z else {x.strip() for x in m.group(1).split(',') if x.strip()}
+                  assert deps <= allowed, (name, deps)
+              total += len(names)
+          print('AXIOM_AUDIT_PASS theorems=' + str(total) + ' allowed=' + ','.join(sorted(allowed)))
+          PY
+          if grep -E 'sorryAx|native_decide\.ax|Lean\.ofReduceBool|Lean\.trustCompiler' \
+              fermat_axiom_audit.log bridge_axiom_audit.log; then
+            echo 'forbidden dependency detected'
+            exit 1
+          fi
+
+      - name: Reject forbidden source constructs
+        working-directory: lean_d13critical
+        run: |
+          set -euo pipefail
+          if grep -n -E '\b(sorry|admit|axiom|unsafe|native_decide)\b|Lean\.ofReduceBool|Lean\.trustCompiler' \
+              D13CriticalFermat.lean D13CriticalBridge.lean AxiomAudit.lean BridgeAxiomAudit.lean; then
+            echo 'forbidden Lean source construct detected'
+            exit 1
+          fi
+
+      - name: Freeze evidence and hashes
+        working-directory: lean_d13critical
+        run: |
+          set -euo pipefail
+          mkdir -p evidence
+          cp D13CriticalFermat.lean D13CriticalBridge.lean \
+             AxiomAudit.lean BridgeAxiomAudit.lean certificate.json \
+             generation.log finalize.log \
+             python_fermat.log java_fermat.log python_bridge.log java_bridge.log \
+             lake_wfail_build.log fermat_axiom_audit.log bridge_axiom_audit.log \
+             generate.py finalize_generated.py verify_python.py VerifyCritical.java \
+             verify_bridge.py VerifyBridge.java lakefile.toml lean-toolchain evidence/
+          (cd evidence && sha256sum * > SHA256SUMS)
+          cat evidence/SHA256SUMS
+
+      - name: Preserve exact evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d13-r25-critical-bridge-evidence
+          retention-days: 30
+          path: lean_d13critical/evidence/
