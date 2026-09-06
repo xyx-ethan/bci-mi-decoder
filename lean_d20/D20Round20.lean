@@ -1,5 +1,13 @@
 import FormalConjectures.OpenQuantumProblems.«35»
 
+/-!
+# D20 Round 20: AME(8,6) quantum-to-classical probability bridge
+
+This file works directly with the pinned Formal Conjectures definition of `IsAME` and proves the
+computational-basis marginal identities needed to pass from an `AME(8,6)` state to the classical
+conditional distributions used in the finite support-profile analysis.
+-/
+
 open scoped BigOperators
 open OpenQuantumProblem35
 
@@ -49,7 +57,8 @@ theorem ame8_6_twoBlockMass_uniform
     twoBlockMass ψ π u = (1 : ℝ) / 36 := by
   rw [twoBlockMass]
   simp_rw [ame8_6_fourBlockMass_uniform ψ hψ π]
-  rw [Finset.sum_const, card_config]
+  rw [Finset.sum_const]
+  simp [card_config]
   norm_num
 
 /--
