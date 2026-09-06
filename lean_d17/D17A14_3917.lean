@@ -97,20 +97,24 @@ lemma P_sub_Q_pos (e : Tag) {t : ℚ} (ht : 1 < t) : 0 < P e t - Q e t := by
     linarith
   · have h2 : 0 < t^2 + 1 := by positivity
     have h4 : 0 < t^4 + 1 := by positivity
-    simp only [P, Q]
-    nlinarith [show
-      (t^8 + t^6 + t^4 + t^2 + 1) -
-        (t^8 - t^7 + t^6 - t^5 + t^4 - t^3 + t^2 - t + 1) =
-          t * (t^2 + 1) * (t^4 + 1) by ring]
+    have hprod : 0 < t * (t^2 + 1) * (t^4 + 1) :=
+      mul_pos (mul_pos ht0 h2) h4
+    have hid : P .e9 t - Q .e9 t = t * (t^2 + 1) * (t^4 + 1) := by
+      simp [P, Q]
+      ring
+    rw [hid]
+    exact hprod
   · have h2 : 0 < t^2 + 1 := by positivity
     have h4 : 0 < t^4 + 1 := by positivity
     have h8 : 0 < t^8 + 1 := by positivity
-    simp only [P, Q]
-    nlinarith [show
-      (t^16 + t^14 + t^12 + t^10 + t^8 + t^6 + t^4 + t^2 + 1) -
-        (t^16 - t^15 + t^14 - t^13 + t^12 - t^11 + t^10 - t^9 +
-          t^8 - t^7 + t^6 - t^5 + t^4 - t^3 + t^2 - t + 1) =
-          t * (t^2 + 1) * (t^4 + 1) * (t^8 + 1) by ring]
+    have hprod : 0 < t * (t^2 + 1) * (t^4 + 1) * (t^8 + 1) :=
+      mul_pos (mul_pos (mul_pos ht0 h2) h4) h8
+    have hid : P .e17 t - Q .e17 t =
+        t * (t^2 + 1) * (t^4 + 1) * (t^8 + 1) := by
+      simp [P, Q]
+      ring
+    rw [hid]
+    exact hprod
 
 lemma one_lt_R (e : Tag) {t : ℚ} (ht : 1 < t) : 1 < R e t := by
   have hq := Q_pos e ht
@@ -144,7 +148,10 @@ lemma R_gt_one_add_inv (e : Tag) {t : ℚ} (ht : 1 < t) :
   have hq := Q_pos e ht
   simp only [R]
   rw [lt_div_iff₀ hq]
-  rw [add_mul, one_mul, div_mul_eq_mul_div, div_eq_iff ht0.ne']
+  have hfrac : (1 + 1 / t) * Q e t = ((t + 1) * Q e t) / t := by
+    field_simp
+    ring
+  rw [hfrac, div_lt_iff₀ ht0]
   have hdiff : 0 < t * P e t - (t + 1) * Q e t := by
     cases e
     · simp [P, Q]
@@ -272,13 +279,14 @@ lemma A_branch14_cross_rat {eb ec ed : Tag} {p q r : ℕ}
     (32767 : ℚ) * P eb p * P ec q * P ed r =
       (32770 : ℚ) * Q eb p * Q ec q * Q ed r := by
   have hnat := A_branch14_uncancelled hp hq hr h2p hpq hqr hA
+  have hqraw := congrArg (fun n : ℕ => (n : ℚ)) hnat
   have hqnat :
       (32767 : ℚ) * (((p : ℚ) + 1) * P eb p) *
           (((q : ℚ) + 1) * P ec q) * (((r : ℚ) + 1) * P ed r) =
         (32770 : ℚ) * (1 + (p : ℚ)^(exponent eb)) *
           (1 + (q : ℚ)^(exponent ec)) * (1 + (r : ℚ)^(exponent ed)) := by
-    exact_mod_cast hnat
-    all_goals simp [cast_PNat]
+    simpa only [Nat.cast_mul, Nat.cast_add, Nat.cast_one, Nat.cast_ofNat,
+      Nat.cast_pow, cast_PNat] using hqraw
   rw [pow_add_one_factor eb, pow_add_one_factor ec, pow_add_one_factor ed] at hqnat
   let c : ℚ := ((p : ℚ) + 1) * ((q : ℚ) + 1) * ((r : ℚ) + 1)
   have hcommon :
@@ -373,12 +381,18 @@ theorem A_branch14_p_window {eb ec ed : Tag} {p q r : ℕ}
     have hr1 : 1 < R ed (r : ℚ) := one_lt_R ed (by exact_mod_cast (show 1 < r by omega))
     have hprod : R eb p < Target := by
       have hpR := R_pos eb hpQ
+      have hqrprod : 1 < R ec (q : ℚ) * R ed (r : ℚ) := by
+        nlinarith [mul_pos (sub_pos.mpr hq1) (sub_pos.mpr hr1)]
+      have hdiff : 0 < R eb (p : ℚ) *
+          (R ec (q : ℚ) * R ed (r : ℚ) - 1) :=
+        mul_pos hpR (sub_pos.mpr hqrprod)
       rw [← hratio]
-      nlinarith [mul_pos (sub_pos.mpr hq1) (sub_pos.mpr hr1)]
+      nlinarith
     have hinv := R_gt_one_add_inv eb hpQ
     by_contra hn
     have hp_le : (p : ℚ) ≤ 10922 := le_of_not_gt hn
-    have hmono := one_add_inv_antitone (by norm_num : (0 : ℚ) < p) hp_le
+    have hp0Q : (0 : ℚ) < p := by exact_mod_cast hp.pos
+    have hmono := one_add_inv_antitone hp0Q hp_le
     have hbound := target_lt_lower_boundary
     linarith
   constructor
