@@ -98,8 +98,12 @@ theorem badFourthLift_normalized_noIntegerSquare
       w ^ 2 = fourthNormalized q r u := hw
       _ = 3 * t + 2 := hk
   have hcast := congrArg (fun y : ℤ => (y : ZMod 3)) hwt
-  norm_num at hcast
-  exact noSquareTwoModThree (w : ZMod 3) hcast
+  have hthree : (3 : ZMod 3) = 0 := by decide
+  have hcast' : (w : ZMod 3) ^ 2 = 2 := by
+    calc
+      (w : ZMod 3) ^ 2 = 3 * (t : ZMod 3) + 2 := hcast
+      _ = 2 := by rw [hthree]; simp
+  exact noSquareTwoModThree (w : ZMod 3) hcast'
 
 /-- The bad normalized class forces residue 162 modulo 243. -/
 theorem badFourthLift_discriminant_mod243
@@ -194,7 +198,8 @@ def LocalCompatible243 (h : Fin 81) (j : Fin 3) : Prop :=
 
 /-- Executable square-root search over the finite ring `ZMod 243`. -/
 def hasSquareRoot243 (a : ZMod 243) : Bool :=
-  (Finset.univ : Finset (ZMod 243)).any fun x => decide (x ^ 2 = a)
+  (Finset.univ : Finset (ZMod 243)).toList.any fun x =>
+    decide (x ^ 2 = a)
 
 /-- The executable square-root search is propositionally exact. -/
 theorem hasSquareRoot243_eq_true_iff (a : ZMod 243) :
