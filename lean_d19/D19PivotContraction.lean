@@ -67,6 +67,60 @@ def ThreeActivePivot (W : WeightsN 8 3 ℂ) : Prop :=
   ∀ u : Fin 6, 3 ≤ u.1 → ∀ c : Fin 3,
     leftLeg W u c = 0 ∧ rightLeg W u c = 0
 
+/-- The official six-vertex edge selected by endpoints and a colouring. -/
+def edgeWeight6 {D : Nat} {α : Type} [CommSemiring α]
+    (W : WeightsN 6 D α) (ι : V 6 → Fin D) (u v : V 6) : α :=
+  W (mkEdge u v (ι u) (ι v))
+
+/-- Exact fifteen-term expansion of the official six-vertex matching sum. -/
+theorem pmSumN_six_explicit {D : Nat} {α : Type} [CommSemiring α]
+    (W : WeightsN 6 D α) (ι : V 6 → Fin D) :
+    pmSumN 6 D W ι =
+        edgeWeight6 W ι 0 1 * edgeWeight6 W ι 2 3 * edgeWeight6 W ι 4 5
+      + edgeWeight6 W ι 0 1 * edgeWeight6 W ι 2 4 * edgeWeight6 W ι 3 5
+      + edgeWeight6 W ι 0 1 * edgeWeight6 W ι 2 5 * edgeWeight6 W ι 3 4
+      + edgeWeight6 W ι 0 2 * edgeWeight6 W ι 1 3 * edgeWeight6 W ι 4 5
+      + edgeWeight6 W ι 0 2 * edgeWeight6 W ι 1 4 * edgeWeight6 W ι 3 5
+      + edgeWeight6 W ι 0 2 * edgeWeight6 W ι 1 5 * edgeWeight6 W ι 3 4
+      + edgeWeight6 W ι 0 3 * edgeWeight6 W ι 1 2 * edgeWeight6 W ι 4 5
+      + edgeWeight6 W ι 0 3 * edgeWeight6 W ι 1 4 * edgeWeight6 W ι 2 5
+      + edgeWeight6 W ι 0 3 * edgeWeight6 W ι 1 5 * edgeWeight6 W ι 2 4
+      + edgeWeight6 W ι 0 4 * edgeWeight6 W ι 1 2 * edgeWeight6 W ι 3 5
+      + edgeWeight6 W ι 0 4 * edgeWeight6 W ι 1 3 * edgeWeight6 W ι 2 5
+      + edgeWeight6 W ι 0 4 * edgeWeight6 W ι 1 5 * edgeWeight6 W ι 2 3
+      + edgeWeight6 W ι 0 5 * edgeWeight6 W ι 1 2 * edgeWeight6 W ι 3 4
+      + edgeWeight6 W ι 0 5 * edgeWeight6 W ι 1 3 * edgeWeight6 W ι 2 4
+      + edgeWeight6 W ι 0 5 * edgeWeight6 W ι 1 4 * edgeWeight6 W ι 2 3 := by
+  simp [pmSumN, pmSumList, pmSumListAux, vertices, edgeWeight6]
+  ring
+
+/-- Matching sum on four explicitly listed residual vertices. -/
+def fourMatchSum (X : WeightsN 6 3 ℂ) (ι : Fin 6 → Fin 3)
+    (a b c d : Fin 6) : ℂ :=
+  edgeWeight6 X ι a b * edgeWeight6 X ι c d +
+  edgeWeight6 X ι a c * edgeWeight6 X ι b d +
+  edgeWeight6 X ι a d * edgeWeight6 X ι b c
+
+/-- The full linear-in-update part indexed by the fifteen residual endpoint pairs. -/
+def linearUpdateSum (W : WeightsN 8 3 ℂ) (ι : Fin 6 → Fin 3) : ℂ :=
+  let X := residualWeight W
+  let R := pivotUpdate W
+    edgeWeight6 R ι 0 1 * fourMatchSum X ι 2 3 4 5 +
+    edgeWeight6 R ι 0 2 * fourMatchSum X ι 1 3 4 5 +
+    edgeWeight6 R ι 0 3 * fourMatchSum X ι 1 2 4 5 +
+    edgeWeight6 R ι 0 4 * fourMatchSum X ι 1 2 3 5 +
+    edgeWeight6 R ι 0 5 * fourMatchSum X ι 1 2 3 4 +
+    edgeWeight6 R ι 1 2 * fourMatchSum X ι 0 3 4 5 +
+    edgeWeight6 R ι 1 3 * fourMatchSum X ι 0 2 4 5 +
+    edgeWeight6 R ι 1 4 * fourMatchSum X ι 0 2 3 5 +
+    edgeWeight6 R ι 1 5 * fourMatchSum X ι 0 2 3 4 +
+    edgeWeight6 R ι 2 3 * fourMatchSum X ι 0 1 4 5 +
+    edgeWeight6 R ι 2 4 * fourMatchSum X ι 0 1 3 5 +
+    edgeWeight6 R ι 2 5 * fourMatchSum X ι 0 1 3 4 +
+    edgeWeight6 R ι 3 4 * fourMatchSum X ι 0 1 2 5 +
+    edgeWeight6 R ι 3 5 * fourMatchSum X ι 0 1 2 4 +
+    edgeWeight6 R ι 4 5 * fourMatchSum X ι 0 1 2 3
+
 lemma allEqual_extend_iff (a b : Fin 3) (ι : Fin 6 → Fin 3) :
     allEqual (extendColor a b ι) ↔
       a = b ∧ b = ι 0 ∧ allEqual ι := by
@@ -86,6 +140,17 @@ lemma extension_target_sum (ι : Fin 6 → Fin 3) :
     simpa [allEqual_extend_iff, hι] using hcount (ι 0)
   · simp [allEqual_extend_iff, hι]
 
+/-- Partition the eight-vertex matchings by whether the two pivots are paired together. -/
+lemma extension_sum_eq_compact
+    (W : WeightsN 8 3 ℂ) (ι : Fin 6 → Fin 3) :
+    (∑ a : Fin 3, ∑ b : Fin 3, pmSumN 8 3 W (extendColor a b ι)) =
+      pivotSum W * pmSumN 6 3 (residualWeight W) ι + linearUpdateSum W ι := by
+  classical
+  simp [pmSumN, pmSumList, pmSumListAux, vertices]
+  simp [linearUpdateSum, fourMatchSum, edgeWeight6, residualWeight, pivotUpdate,
+    pivotSum, leftLeg, rightLeg, liftResidual, extendColor, Fin.sum_univ_succ]
+  ring
+
 /-- Exact fixed-size contraction identity for the three-active-residual-vertex branch. -/
 theorem contracted_pmSum_eq_extension_sum
     (W : WeightsN 8 3 ℂ)
@@ -95,6 +160,7 @@ theorem contracted_pmSum_eq_extension_sum
     pmSumN 6 3 (contractedWeight W) ι =
       ∑ a : Fin 3, ∑ b : Fin 3, pmSumN 8 3 W (extendColor a b ι) := by
   classical
+  rw [extension_sum_eq_compact]
   have hU (u v : Fin 6) (i j : Fin 3) (hv : 3 ≤ v.1) :
       pivotUpdate W (mkEdge u v i j) = 0 := by
     have hA := (hactive v hv j).1
@@ -124,11 +190,12 @@ theorem contracted_pmSum_eq_extension_sum
     hU 3 5 i j (by norm_num)
   have hU45 (i j : Fin 3) : pivotUpdate W (mkEdge 4 5 i j) = 0 :=
     hU 4 5 i j (by norm_num)
-  simp [pmSumN, pmSumList, pmSumListAux, vertices]
-  simp [contractedWeight, updatedWeight, residualWeight, liftResidual,
+  simp_rw [pmSumN_six_explicit]
+  simp [edgeWeight6, contractedWeight, updatedWeight, residualWeight,
+    linearUpdateSum, fourMatchSum,
     hU03, hU04, hU05, hU13, hU14, hU15,
     hU23, hU24, hU25, hU34, hU35, hU45]
-  simp [pivotUpdate, pivotSum, leftLeg, rightLeg, extendColor, Fin.sum_univ_succ]
+  simp [pivotUpdate]
   field_simp [hs] <;> ring
 
 /-- A solution on eight vertices in this branch contracts to a six-vertex solution. -/
