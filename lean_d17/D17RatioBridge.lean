@@ -39,7 +39,8 @@ theorem unitary_coprime_mul_iff {m n a b : ℕ}
         rw [Nat.mul_div_cancel' ha, Nat.mul_div_cancel' hb]
       _ = (a * b) * ((m / a) * (n / b)) := by ac_rfl
   have hcomp : (m * n) / (a * b) = (m / a) * (n / b) := by
-    rw [hprod, Nat.mul_div_left _ habpos]
+    rw [hprod]
+    exact Nat.mul_div_left _ habpos
   rw [hcomp]
   constructor
   · intro h
