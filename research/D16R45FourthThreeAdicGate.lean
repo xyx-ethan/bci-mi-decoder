@@ -98,9 +98,9 @@ theorem badFourthLift_normalized_noIntegerSquare
       (w : ZMod 3) ^ 2 = (((3 * t + 2 : ℤ)) : ZMod 3) := by
     simpa only [Int.cast_pow] using hcast
   have hrhs : (((3 * t + 2 : ℤ)) : ZMod 3) = 2 := by
-    change (3 : ZMod 3) * (t : ZMod 3) + 2 = 2
-    rw [show (3 : ZMod 3) = 0 by decide]
-    simp
+    rw [ZMod.intCast_eq_intCast_iff_dvd_sub]
+    refine ⟨-t, ?_⟩
+    ring
   exact noSquareTwoModThree (w : ZMod 3) (hcast'.trans hrhs)
 
 /-- The bad normalized class forces residue 162 modulo 243. -/
@@ -221,7 +221,7 @@ theorem square_control_not_bad :
 /-- The square-control descent is checked independently of the bad predicate. -/
 theorem square_control_descends :
     ∃ w : ℤ, w ^ 2 = fourthNormalized 9 1 (-1) := by
-  apply square_discriminant_descends
+  apply square_discriminant_descends (m := -2) (d := 1)
   · norm_num [liftGateExpression]
   · refine ⟨90, ?_⟩
     norm_num [discriminant]
