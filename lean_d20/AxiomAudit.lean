@@ -1,0 +1,6 @@
+import D20Round20
+
+#print axioms D20Round20.ame8_6_fourBlockMass_uniform
+#print axioms D20Round20.ame8_6_twoBlockMass_uniform
+#print axioms D20Round20.ame8_6_conditional_nextTwo_uniform
+#print axioms D20Round20.ame8_6_twoBlockMass_pos
