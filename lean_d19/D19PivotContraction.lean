@@ -12,6 +12,7 @@ open scoped BigOperators
 noncomputable section
 
 set_option maxHeartbeats 20000000
+set_option maxRecDepth 100000
 set_option linter.unusedSimpArgs false
 
 namespace D19PivotContraction
@@ -133,11 +134,15 @@ lemma extension_target_sum (ι : Fin 6 → Fin 3) :
         (if allEqual ι then (1 : ℂ) else 0) := by
   classical
   by_cases hι : allEqual ι
-  · have hcount (c : Fin 3) :
-        (∑ a : Fin 3, ∑ b : Fin 3,
-          if a = b ∧ b = c then (1 : ℂ) else 0) = 1 := by
-      fin_cases c <;> norm_num [Fin.sum_univ_succ]
-    simpa [allEqual_extend_iff, hι] using hcount (ι 0)
+  · have hinner (a c : Fin 3) :
+        (∑ b : Fin 3, if a = b ∧ b = c then (1 : ℂ) else 0) =
+          (if a = c then 1 else 0) := by
+      by_cases hac : a = c
+      · subst a
+        simp
+      · simp [hac]
+    simp_rw [allEqual_extend_iff, hι, hinner]
+    simp
   · simp [allEqual_extend_iff, hι]
 
 /-- Partition the eight-vertex matchings by whether the two pivots are paired together. -/
@@ -165,7 +170,9 @@ theorem contracted_pmSum_eq_extension_sum
       pivotUpdate W (mkEdge u v i j) = 0 := by
     have hA := (hactive v hv j).1
     have hB := (hactive v hv j).2
-    simp [pivotUpdate, hA, hB]
+    change leftLeg W u i * rightLeg W v j +
+      rightLeg W u i * leftLeg W v j = 0
+    simp [hA, hB]
   have hU03 (i j : Fin 3) : pivotUpdate W (mkEdge 0 3 i j) = 0 :=
     hU 0 3 i j (by norm_num)
   have hU04 (i j : Fin 3) : pivotUpdate W (mkEdge 0 4 i j) = 0 :=
