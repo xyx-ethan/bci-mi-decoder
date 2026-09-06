@@ -16,9 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Independent exact arithmetic checks
+      - name: Exact semantic and arithmetic checks
         working-directory: lean_d17
         run: |
+          python3 verify_semantics.py
           python3 verify_finite_y.py
           g++ -std=c++17 -O2 verify_finite_y.cpp -o /tmp/verify_finite_y
           /tmp/verify_finite_y
