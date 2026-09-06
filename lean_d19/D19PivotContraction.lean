@@ -137,10 +137,7 @@ lemma extension_target_sum (ι : Fin 6 → Fin 3) :
   · have hinner (a c : Fin 3) :
         (∑ b : Fin 3, if a = b ∧ b = c then (1 : ℂ) else 0) =
           (if a = c then 1 else 0) := by
-      by_cases hac : a = c
-      · subst a
-        simp [eq_comm]
-      · simp [hac, eq_comm]
+      fin_cases a <;> fin_cases c <;> norm_num [Fin.sum_univ_succ]
     simp_rw [allEqual_extend_iff, hι, hinner]
     simp
   · simp [allEqual_extend_iff, hι]
@@ -167,43 +164,22 @@ theorem contracted_pmSum_eq_extension_sum
       ∑ a : Fin 3, ∑ b : Fin 3, pmSumN 8 3 W (extendColor a b ι) := by
   classical
   rw [extension_sum_eq_compact]
-  have hU (u v : Fin 6) (i j : Fin 3) (hv : 3 ≤ v.1) :
-      pivotUpdate W (mkEdge u v i j) = 0 := by
-    have hA := (hactive v hv j).1
-    have hB := (hactive v hv j).2
-    change leftLeg W u i * rightLeg W v j +
-      rightLeg W u i * leftLeg W v j = 0
-    simp [hA, hB]
-  have hU03 (i j : Fin 3) : pivotUpdate W (mkEdge 0 3 i j) = 0 :=
-    hU 0 3 i j (by norm_num)
-  have hU04 (i j : Fin 3) : pivotUpdate W (mkEdge 0 4 i j) = 0 :=
-    hU 0 4 i j (by norm_num)
-  have hU05 (i j : Fin 3) : pivotUpdate W (mkEdge 0 5 i j) = 0 :=
-    hU 0 5 i j (by norm_num)
-  have hU13 (i j : Fin 3) : pivotUpdate W (mkEdge 1 3 i j) = 0 :=
-    hU 1 3 i j (by norm_num)
-  have hU14 (i j : Fin 3) : pivotUpdate W (mkEdge 1 4 i j) = 0 :=
-    hU 1 4 i j (by norm_num)
-  have hU15 (i j : Fin 3) : pivotUpdate W (mkEdge 1 5 i j) = 0 :=
-    hU 1 5 i j (by norm_num)
-  have hU23 (i j : Fin 3) : pivotUpdate W (mkEdge 2 3 i j) = 0 :=
-    hU 2 3 i j (by norm_num)
-  have hU24 (i j : Fin 3) : pivotUpdate W (mkEdge 2 4 i j) = 0 :=
-    hU 2 4 i j (by norm_num)
-  have hU25 (i j : Fin 3) : pivotUpdate W (mkEdge 2 5 i j) = 0 :=
-    hU 2 5 i j (by norm_num)
-  have hU34 (i j : Fin 3) : pivotUpdate W (mkEdge 3 4 i j) = 0 :=
-    hU 3 4 i j (by norm_num)
-  have hU35 (i j : Fin 3) : pivotUpdate W (mkEdge 3 5 i j) = 0 :=
-    hU 3 5 i j (by norm_num)
-  have hU45 (i j : Fin 3) : pivotUpdate W (mkEdge 4 5 i j) = 0 :=
-    hU 4 5 i j (by norm_num)
+  have hA3 (c : Fin 3) : leftLeg W (3 : Fin 6) c = 0 :=
+    (hactive 3 (by norm_num) c).1
+  have hB3 (c : Fin 3) : rightLeg W (3 : Fin 6) c = 0 :=
+    (hactive 3 (by norm_num) c).2
+  have hA4 (c : Fin 3) : leftLeg W (4 : Fin 6) c = 0 :=
+    (hactive 4 (by norm_num) c).1
+  have hB4 (c : Fin 3) : rightLeg W (4 : Fin 6) c = 0 :=
+    (hactive 4 (by norm_num) c).2
+  have hA5 (c : Fin 3) : leftLeg W (5 : Fin 6) c = 0 :=
+    (hactive 5 (by norm_num) c).1
+  have hB5 (c : Fin 3) : rightLeg W (5 : Fin 6) c = 0 :=
+    (hactive 5 (by norm_num) c).2
   simp_rw [pmSumN_six_explicit]
   simp [edgeWeight6, contractedWeight, updatedWeight, residualWeight,
-    linearUpdateSum, fourMatchSum, liftResidual, mkEdge,
-    hU03, hU04, hU05, hU13, hU14, hU15,
-    hU23, hU24, hU25, hU34, hU35, hU45]
-  simp [pivotUpdate, mkEdge]
+    linearUpdateSum, fourMatchSum, liftResidual, pivotUpdate, mkEdge,
+    hA3, hB3, hA4, hB4, hA5, hB5]
   field_simp [hs] <;> ring
 
 /-- A solution on eight vertices in this branch contracts to a six-vertex solution. -/
