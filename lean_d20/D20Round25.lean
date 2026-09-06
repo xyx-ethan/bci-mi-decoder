@@ -74,7 +74,7 @@ def standardFirstFour : Fin 4 ↪ Fin 8 where
   inj' := by
     intro i j hij
     apply Fin.ext
-    exact congrArg Fin.val hij
+    simpa [leftIndex] using congrArg (fun k : Fin 8 => k.1) hij
 
 /-- Projection of a nonzero support word to an ordered selection of four coordinates. -/
 def supportProjection
@@ -96,9 +96,9 @@ theorem ame8_6_minSupport_projection_injective
   let a : Config 8 6 := permuteConfig σ x.1
   let b : Config 8 6 := permuteConfig σ y.1
   have ha : permuteState σ.symm ψ a ≠ 0 := by
-    simp [a, permuteState_apply, permuteConfig_symm_right, x.2]
+    simpa [a, permuteConfig_symm_right] using x.2
   have hb : permuteState σ.symm ψ b ≠ 0 := by
-    simp [b, permuteState_apply, permuteConfig_symm_right, y.2]
+    simpa [b, permuteConfig_symm_right] using y.2
   have hfirst : firstFour a = firstFour b := by
     funext i
     have hi := congrFun hproj i
