@@ -6,6 +6,10 @@ on:
       - d19-round20-pivot-star-contraction-20260906
   workflow_dispatch:
 
+concurrency:
+  group: d19-round20-external6x3-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
