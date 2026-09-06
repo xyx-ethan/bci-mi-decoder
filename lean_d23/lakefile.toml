@@ -1,6 +1,6 @@
-name = "d23_round22"
+name = "d23_round23"
 version = "0.1.0"
-defaultTargets = ["D23Round21", "D23Round22"]
+defaultTargets = ["D23Round21", "D23Round22", "D23Round23"]
 
 [[require]]
 name = "mathlib"
@@ -12,3 +12,6 @@ name = "D23Round21"
 
 [[lean_lib]]
 name = "D23Round22"
+
+[[lean_lib]]
+name = "D23Round23"
