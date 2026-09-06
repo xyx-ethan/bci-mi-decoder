@@ -58,12 +58,12 @@ theorem badLiftResidue_discriminant_mod27
         27 * (liftCorrection q r - t - 1) + 18 := by
     rw [discriminant_eq_neg_three_lift_add_twentyseven, ht]
     ring
-  have hcast := congrArg (fun z : ℤ => (z : ZMod 27)) hdelta
-  calc
-    (discriminant q r m d : ZMod 27) =
-        (27 : ZMod 27) *
-            ((liftCorrection q r : ℤ) - t - 1) + 18 := hcast
-    _ = 18 := by norm_num
+  change (discriminant q r m d : ZMod 27) =
+    ((18 : ℤ) : ZMod 27)
+  rw [ZMod.intCast_eq_intCast_iff_dvd_sub]
+  refine ⟨-(liftCorrection q r - t - 1), ?_⟩
+  rw [hdelta]
+  ring
 
 /-- A bad lift residue is a proof-carrying modular nonsquare certificate. -/
 theorem badLiftResidue_noSquareMod27
