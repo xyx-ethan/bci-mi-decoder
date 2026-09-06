@@ -1,0 +1,34 @@
+name: D19 Round20 external 6x3 replay
+
+on:
+  push:
+    branches:
+      - d19-round20-pivot-star-contraction-20260906
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay-external-6x3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install elan
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain leanprover/lean4:v4.27.0
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Clone exact proof release
+        run: |
+          git clone https://github.com/algal/krenn-gu-6x3-certificate.git /tmp/krenn-gu-6x3-certificate
+          cd /tmp/krenn-gu-6x3-certificate
+          git checkout c04696e515e0c02be140353fb52ea60c62e827b1
+          test "$(git rev-parse HEAD)" = c04696e515e0c02be140353fb52ea60c62e827b1
+      - name: Fetch pinned dependency cache
+        working-directory: /tmp/krenn-gu-6x3-certificate
+        run: lake exe cache get
+      - name: Run complete external release gate
+        working-directory: /tmp/krenn-gu-6x3-certificate
+        run: scripts/verify_release.sh
