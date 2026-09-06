@@ -134,12 +134,8 @@ lemma extension_target_sum (ι : Fin 6 → Fin 3) :
         (if allEqual ι then (1 : ℂ) else 0) := by
   classical
   by_cases hι : allEqual ι
-  · have hinner (a c : Fin 3) :
-        (∑ b : Fin 3, if a = b ∧ b = c then (1 : ℂ) else 0) =
-          (if a = c then 1 else 0) := by
-      fin_cases a <;> fin_cases c <;> norm_num [Fin.sum_univ_succ]
-    simp_rw [allEqual_extend_iff, hι, hinner]
-    simp
+  · fin_cases h0 : ι 0 <;>
+      norm_num [allEqual_extend_iff, hι, h0, Fin.sum_univ_succ]
   · simp [allEqual_extend_iff, hι]
 
 /-- Partition the eight-vertex matchings by whether the two pivots are paired together. -/
@@ -180,7 +176,8 @@ theorem contracted_pmSum_eq_extension_sum
   simp [edgeWeight6, contractedWeight, updatedWeight, residualWeight,
     linearUpdateSum, fourMatchSum, liftResidual, pivotUpdate, mkEdge,
     hA3, hB3, hA4, hB4, hA5, hB5]
-  field_simp [hs] <;> ring
+  field_simp [hs]
+  ring
 
 /-- A solution on eight vertices in this branch contracts to a six-vertex solution. -/
 theorem eqSystem6_of_eqSystem8_threeActivePivot
