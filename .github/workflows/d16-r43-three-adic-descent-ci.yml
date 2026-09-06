@@ -37,13 +37,13 @@ jobs:
             -o FormalConjectures/Research/D16R41ModularNonsquare.lean
           curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/61e4e778b492c49b0d956d308d639e0e97226bd4/research/D16R42ThreeAdicGate.lean \
             -o FormalConjectures/Research/D16R42ThreeAdicGate.lean
-          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/f6a46e9e1aa5088ce4a9c7fdd86bdd3f0babdb83/research/D16R43ThreeAdicDescent.lean \
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/a7dd0ba2c31ec096aed5a9363f6d10164f75d663/research/D16R43ThreeAdicDescent.lean \
             -o FormalConjectures/Research/D16R43ThreeAdicDescent.lean
           echo '88a5fe978cdb963a92e63d7f64b59d4cac8b253a8a6460404064a981eaf0a580  FormalConjectures/Research/D16R39DiscriminantBridge.lean' | sha256sum -c -
           echo 'e44becdb05a8d8753a048ace6862b945e1292f8572c81614b3090b42661e3e0a  FormalConjectures/Research/D16R40SourceToQuadratic.lean' | sha256sum -c -
           echo '1f9332b3069f41e94ef9231aa4adf48542703bac831514049ab308b4c7acd0e2  FormalConjectures/Research/D16R41ModularNonsquare.lean' | sha256sum -c -
           echo '0ed9a800a7289fc57618ac589e2f5b612276d6db3d61ac79fbef9b9e3074d80d  FormalConjectures/Research/D16R42ThreeAdicGate.lean' | sha256sum -c -
-          echo 'f41c3a48bc54a2e7020ced209c188dccb069c78423ad948e47163d2f80cfcfa5  FormalConjectures/Research/D16R43ThreeAdicDescent.lean' | sha256sum -c -
+          echo 'b8444a6dcbc00aa00778dabf38ead603373fbd1104cc5c472d9aedfa4c0c5795  FormalConjectures/Research/D16R43ThreeAdicDescent.lean' | sha256sum -c -
           ! grep -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' \
             FormalConjectures/Research/D16R39DiscriminantBridge.lean \
             FormalConjectures/Research/D16R40SourceToQuadratic.lean \
