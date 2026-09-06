@@ -1,6 +1,6 @@
-name = "d20_round24"
+name = "d20_round25"
 version = "0.1.0"
-defaultTargets = ["D20Round20", "D20Round21", "D20Round22", "D20Round23", "D20Round24"]
+defaultTargets = ["D20Round20", "D20Round21", "D20Round22", "D20Round23", "D20Round24", "D20Round25"]
 
 [[require]]
 name = "formal_conjectures"
@@ -21,3 +21,6 @@ name = "D20Round23"
 
 [[lean_lib]]
 name = "D20Round24"
+
+[[lean_lib]]
+name = "D20Round25"
