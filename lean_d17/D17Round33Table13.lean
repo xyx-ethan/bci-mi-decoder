@@ -6,7 +6,7 @@ import D17Round32FirstTable
 This file extends the Round-32 executable modular-filter layer by checking
 all `13 × 13` residue pairs for the second modulus in the Round-28 cover.
 The full row-major Boolean table and its killed count are reduced by the
-Lean kernel; no `native_decide` or compiler-trust mechanism is used.
+Lean kernel using ordinary reduction, without a compiler-trust path.
 -/
 
 namespace D17Round33
