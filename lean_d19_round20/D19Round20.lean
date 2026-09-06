@@ -187,7 +187,30 @@ theorem allEqual_extendColor_iff
     (a b : Fin 3) (ι : Fin 6 → Fin 3) :
     allEqual (extendColor a b ι) ↔
       a = ι 0 ∧ b = ι 0 ∧ allEqual ι := by
-  simp [allEqual, allEqualList, vertices, extendColor]
+  constructor
+  · intro h
+    have hchain :
+        a = b ∧ b = ι 0 ∧ ι 0 = ι 1 ∧ ι 1 = ι 2 ∧
+          ι 2 = ι 3 ∧ ι 3 = ι 4 ∧ ι 4 = ι 5 := by
+      simpa [allEqual, allEqualList, vertices, extendColor] using h
+    rcases hchain with ⟨hab, hb0, h01, h12, h23, h34, h45⟩
+    refine ⟨hab.trans hb0, hb0, ?_⟩
+    have hres :
+        ι 0 = ι 1 ∧ ι 1 = ι 2 ∧ ι 2 = ι 3 ∧
+          ι 3 = ι 4 ∧ ι 4 = ι 5 :=
+      ⟨h01, h12, h23, h34, h45⟩
+    simpa [allEqual, allEqualList, vertices] using hres
+  · rintro ⟨ha0, hb0, hι⟩
+    have hres :
+        ι 0 = ι 1 ∧ ι 1 = ι 2 ∧ ι 2 = ι 3 ∧
+          ι 3 = ι 4 ∧ ι 4 = ι 5 := by
+      simpa [allEqual, allEqualList, vertices] using hι
+    rcases hres with ⟨h01, h12, h23, h34, h45⟩
+    have hchain :
+        a = b ∧ b = ι 0 ∧ ι 0 = ι 1 ∧ ι 1 = ι 2 ∧
+          ι 2 = ι 3 ∧ ι 3 = ι 4 ∧ ι 4 = ι 5 :=
+      ⟨ha0.trans hb0.symm, hb0, h01, h12, h23, h34, h45⟩
+    simpa [allEqual, allEqualList, vertices, extendColor] using hchain
 
 /-- Summing the target indicator over all nine pivot-colour extensions preserves
 the six-vertex target indicator. -/
