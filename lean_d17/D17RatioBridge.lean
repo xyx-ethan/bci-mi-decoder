@@ -57,6 +57,59 @@ theorem unitary_coprime_mul_iff {m n a b : ℕ}
     have hbc : b.Coprime ((m / a) * (n / b)) := Nat.Coprime.mul_right hbma hbb
     exact Nat.Coprime.mul_left hac hbc
 
+theorem unitaryDivisors_mul {m n : ℕ} (hmn : m.Coprime n)
+    (hm0 : m ≠ 0) (hn0 : n ≠ 0) :
+    unitaryDivisors (m * n) =
+      (unitaryDivisors m ×ˢ unitaryDivisors n).image (fun ab => ab.1 * ab.2) := by
+  ext d
+  constructor
+  · intro hd
+    rcases Finset.mem_filter.mp hd with ⟨hdDiv, hdCop⟩
+    have hdvd : d ∣ m * n := (Nat.mem_divisors.mp hdDiv).1
+    let a := Nat.gcd d m
+    let b := Nat.gcd d n
+    have ha : a ∣ m := Nat.gcd_dvd_right d m
+    have hb : b ∣ n := Nat.gcd_dvd_right d n
+    have hab : a * b = d :=
+      (Nat.gcd_mul_gcd_eq_iff_dvd_mul_of_coprime hmn).2 hdvd
+    have hpair : a.Coprime (m / a) ∧ b.Coprime (n / b) := by
+      apply (unitary_coprime_mul_iff hmn hm0 hn0 ha hb).1
+      simpa [hab] using hdCop
+    have haDiv : a ∈ m.divisors := Nat.mem_divisors.mpr ⟨ha, hm0⟩
+    have hbDiv : b ∈ n.divisors := Nat.mem_divisors.mpr ⟨hb, hn0⟩
+    have haU : a ∈ unitaryDivisors m := Finset.mem_filter.mpr ⟨haDiv, hpair.1⟩
+    have hbU : b ∈ unitaryDivisors n := Finset.mem_filter.mpr ⟨hbDiv, hpair.2⟩
+    exact Finset.mem_image.mpr ⟨(a, b), Finset.mem_product.mpr ⟨haU, hbU⟩, hab⟩
+  · intro hd
+    rcases Finset.mem_image.mp hd with ⟨ab, habU, rfl⟩
+    rcases Finset.mem_product.mp habU with ⟨haU, hbU⟩
+    rcases Finset.mem_filter.mp haU with ⟨haDiv, haCop⟩
+    rcases Finset.mem_filter.mp hbU with ⟨hbDiv, hbCop⟩
+    have ha : ab.1 ∣ m := (Nat.mem_divisors.mp haDiv).1
+    have hb : ab.2 ∣ n := (Nat.mem_divisors.mp hbDiv).1
+    have hdiv : ab.1 * ab.2 ∣ m * n := Nat.mul_dvd_mul ha hb
+    have hDiv : ab.1 * ab.2 ∈ (m * n).divisors :=
+      Nat.mem_divisors.mpr ⟨hdiv, mul_ne_zero hm0 hn0⟩
+    have hCop : (ab.1 * ab.2).Coprime ((m * n) / (ab.1 * ab.2)) :=
+      (unitary_coprime_mul_iff hmn hm0 hn0 ha hb).2 ⟨haCop, hbCop⟩
+    exact Finset.mem_filter.mpr ⟨hDiv, hCop⟩
+
+theorem usigma_mul_of_coprime {m n : ℕ} (hmn : m.Coprime n)
+    (hm0 : m ≠ 0) (hn0 : n ≠ 0) :
+    usigma (m * n) = usigma m * usigma n := by
+  rw [usigma, unitaryDivisors_mul hmn hm0 hn0]
+  rw [Finset.sum_image]
+  · simp only [Finset.sum_product, usigma]
+    rw [← Finset.sum_mul_sum]
+  · intro a ha b hb heq
+    rcases Finset.mem_product.mp ha with ⟨ha1, ha2⟩
+    rcases Finset.mem_product.mp hb with ⟨hb1, hb2⟩
+    have haD : a ∈ m.divisors ×ˢ n.divisors := Finset.mem_product.mpr
+      ⟨(Finset.mem_filter.mp ha1).1, (Finset.mem_filter.mp ha2).1⟩
+    have hbD : b ∈ m.divisors ×ˢ n.divisors := Finset.mem_product.mpr
+      ⟨(Finset.mem_filter.mp hb1).1, (Finset.mem_filter.mp hb2).1⟩
+    exact hmn.mul_injOn_divisors (by simpa using haD) (by simpa using hbD) heq
+
 theorem not_coprime_prime_pows {p i j : ℕ} (hp : p.Prime)
     (hi : i ≠ 0) (hj : j ≠ 0) : ¬ (p ^ i).Coprime (p ^ j) := by
   intro h
