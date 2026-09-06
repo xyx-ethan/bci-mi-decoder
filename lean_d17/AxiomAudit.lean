@@ -5,8 +5,10 @@ import D17FiniteY
 -/
 
 #print axioms D17Round22.phi6_pos
+#print axioms D17Round22.pow4_add_one_pos
 #print axioms D17Round22.R3_pos
 #print axioms D17Round22.R4_pos
+#print axioms D17Round22.U_pos
 #print axioms D17Round22.R3_lt_U
 #print axioms D17Round22.R4_lt_U
 #print axioms D17Round22.U_antitone
