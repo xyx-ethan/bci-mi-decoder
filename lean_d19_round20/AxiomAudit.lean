@@ -1,3 +1,6 @@
 import D19Round20
 
+#print axioms D19Round20.pivotCorrection_reverse
+#print axioms D19Round20.rawZeroStar_implies_zeroStar
+#print axioms D19Round20.rawZeroStar_forces_allCanonical
 #print axioms D19Round20.pmSumN_pivotStarContract
