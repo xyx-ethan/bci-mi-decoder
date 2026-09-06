@@ -67,7 +67,7 @@ theorem certificate_6732 :
     HasModularNonsquareCertificate 6732 := by
   refine ⟨5, by norm_num, ?_⟩
   intro x
-  fin_cases x <;> norm_num
+  fin_cases x <;> decide
 
 /-- End-to-end control: the modular certificate excludes this exact source
 system instance for all integer unknowns `p,u`. -/
