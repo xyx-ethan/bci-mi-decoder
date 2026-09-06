@@ -9,6 +9,10 @@ excludes the corresponding two-prime fixed-point strata with decimal lengths
 733 and 666, without using the research-open conjecture.
 -/
 
+set_option maxRecDepth 1000000
+set_option maxHeartbeats 0
+set_option exponentiation.threshold 1000
+
 namespace D13Round25
 
 open OeisA67599
