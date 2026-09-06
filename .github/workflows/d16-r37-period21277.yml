@@ -1,0 +1,113 @@
+name: D16 R37 period-21277 kernel gate
+
+on:
+  push:
+    branches:
+      - d16-r37-period21277-ci
+
+permissions:
+  contents: read
+
+jobs:
+  kernel-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Clone pinned Formal Conjectures
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/google-deepmind/formal-conjectures.git fc
+          cd fc
+          git checkout 8323e878b83fcd7f4a448256069352a265460d75
+          test "$(git rev-parse HEAD)" = "8323e878b83fcd7f4a448256069352a265460d75"
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.33.1"
+          grep -q '0df444a360eaa60ab8c11dca51a86af692955474' lake-manifest.json
+          sha256sum FormalConjectures/OEIS/51903.lean FormalConjectures/OEIS/67720.lean lean-toolchain lake-manifest.json
+
+      - name: Inject pinned R34 dependency and R37 certificate
+        run: |
+          set -euxo pipefail
+          cd fc
+          mkdir -p FormalConjectures/Research
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/440b93ffd3c8a764ce1a63def36f49173340de34/research/D16R34P112.lean \
+            -o FormalConjectures/Research/D16R34P112.lean
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/b8b4a8142473a56b80de5627a864ff49693a5611/research/D16R37Period21277.lean \
+            -o FormalConjectures/Research/D16R37Period21277.lean
+          sha256sum \
+            FormalConjectures/Research/D16R34P112.lean \
+            FormalConjectures/Research/D16R37Period21277.lean
+          ! grep -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' \
+            FormalConjectures/Research/D16R34P112.lean \
+            FormalConjectures/Research/D16R37Period21277.lean
+
+      - name: Install elan exactly as upstream
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v1.4.2/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch pinned mathlib olean cache
+        run: |
+          set -euxo pipefail
+          cd fc
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Focused warning-free build
+        run: |
+          set -euxo pipefail
+          cd fc
+          set -o pipefail
+          lake --wfail build \
+            FormalConjectures.Research.D16R34P112 \
+            FormalConjectures.Research.D16R37Period21277 \
+            2>&1 | tee /tmp/d16_r37_focus.log
+          echo D16_R37_FOCUSED_KERNEL_PASS
+
+      - name: Generate aggregate files
+        run: |
+          set -euxo pipefail
+          cd fc
+          ./scripts/mk_all_formathlib.sh
+          rm -f FormalConjectures/All.lean
+          lake exe mk_all --lib FormalConjectures || true
+          mv FormalConjectures.lean FormalConjectures/All.lean
+          echo "set_option linter.style.moduleDocstring false" >> FormalConjectures/All.lean
+
+      - name: Full warning-free project build
+        run: |
+          set -euxo pipefail
+          cd fc
+          set -o pipefail
+          lake --wfail build 2>&1 | tee /tmp/d16_r37_lake_wfail_build.log
+          echo D16_R37_LAKE_WFAIL_BUILD_PASS
+
+      - name: Kernel axiom audit
+        run: |
+          set -euxo pipefail
+          cd fc
+          cat > AuditD16R37.lean <<'LEAN'
+          import FormalConjectures.Research.D16R37Period21277
+          #print axioms D16R37Period21277.modulus_prime
+          #print axioms D16R37Period21277.d_sq
+          #print axioms D16R37Period21277.u_period
+          #print axioms D16R37Period21277.v_period
+          #print axioms D16R37Period21277.pell_fst_period_mul
+          #print axioms D16R37Period21277.plus_120
+          #print axioms D16R37Period21277.minus_120
+          #print axioms D16R37Period21277.plus_5198
+          #print axioms D16R37Period21277.minus_5198
+          #print axioms D16R37Period21277.base120_zero
+          #print axioms D16R37Period21277.base5198_zero
+          #print axioms D16R37Period21277.progression120_dvd
+          #print axioms D16R37Period21277.progression5198_dvd
+          #print axioms D16R37Period21277.progression120_not_prime
+          #print axioms D16R37Period21277.progression5198_not_prime
+          #print axioms D16R37Period21277.two_progressions_not_prime
+          LEAN
+          set -o pipefail
+          lake env lean AuditD16R37.lean 2>&1 | tee /tmp/d16_r37_axioms.log
+          ! grep -E 'sorryAx|native_decide\.ax|Lean\.ofReduceBool|Lean\.trustCompiler' /tmp/d16_r37_axioms.log
+          echo D16_R37_AXIOM_AUDIT_PASS
