@@ -6,6 +6,10 @@ on:
       - d19-round20-pivot-star-contraction-20260906
   workflow_dispatch:
 
+concurrency:
+  group: d19-round20-lean-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -43,9 +47,9 @@ jobs:
           fi
       - name: Reject forbidden source constructs
         run: |
-          for f in lean_d19_round20/D19Round20.lean lean_d19_round20/AxiomAudit.lean; do
+          while IFS= read -r f; do
             if grep -n -E '\b(sorry|admit|axiom|unsafe|native_decide)\b' "$f"; then
               echo "forbidden Lean source token detected in $f"
               exit 1
             fi
-          done
+          done < <(find lean_d19_round20 -maxdepth 1 -type f -name '*.lean' -print | sort)
