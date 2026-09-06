@@ -58,7 +58,7 @@ theorem ame8_6_twoBlockMass_uniform
   rw [twoBlockMass]
   simp_rw [ame8_6_fourBlockMass_uniform ψ hψ π]
   rw [Finset.sum_const]
-  simp [card_config]
+  simp
   norm_num
 
 /--
