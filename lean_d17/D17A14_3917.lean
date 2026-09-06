@@ -150,7 +150,6 @@ lemma R_gt_one_add_inv (e : Tag) {t : ℚ} (ht : 1 < t) :
   rw [lt_div_iff₀ hq]
   have hfrac : (1 + 1 / t) * Q e t = ((t + 1) * Q e t) / t := by
     field_simp
-    ring
   rw [hfrac, div_lt_iff₀ ht0]
   have hdiff : 0 < t * P e t - (t + 1) * Q e t := by
     cases e
