@@ -23,11 +23,18 @@ def pairCellSize (f : Fin 23 → Fin 11) (c : Fin 11) : ℕ :=
 /-- The eleven cell sizes partition all 23 light words. -/
 theorem sum_pairCellSize (f : Fin 23 → Fin 11) :
     ∑ c : Fin 11, pairCellSize f c = 23 := by
-  have h := Finset.card_eq_sum_card_fiberwise
-    (s := (Finset.univ : Finset (Fin 23)))
-    (t := (Finset.univ : Finset (Fin 11)))
-    (f := f) (by simp)
-  simpa [pairCellSize] using h.symm
+  classical
+  calc
+    ∑ c : Fin 11, pairCellSize f c =
+        ∑ c ∈ (Finset.univ : Finset (Fin 11)),
+          ((Finset.univ : Finset (Fin 23)).filter fun x => f x = c).card := by
+            rfl
+    _ = (Finset.univ : Finset (Fin 23)).card :=
+      (Finset.card_eq_sum_card_fiberwise
+        (s := (Finset.univ : Finset (Fin 23)))
+        (t := (Finset.univ : Finset (Fin 11)))
+        (f := f) (by simp)).symm
+    _ = 23 := by simp
 
 /-- Eleven occupied cells of size at least two partitioning 23 points have a unique cell of
 size three; all remaining cells have size two. -/
