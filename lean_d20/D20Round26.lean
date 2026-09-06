@@ -27,13 +27,7 @@ theorem sum_pairCellSize (f : Fin 23 → Fin 11) :
     (s := (Finset.univ : Finset (Fin 23)))
     (t := (Finset.univ : Finset (Fin 11)))
     (f := f) (by simp)
-  calc
-    ∑ c : Fin 11, pairCellSize f c =
-        ∑ c in (Finset.univ : Finset (Fin 11)),
-          ((Finset.univ : Finset (Fin 23)).filter fun x => f x = c).card := by
-            rfl
-    _ = (Finset.univ : Finset (Fin 23)).card := h.symm
-    _ = 23 := by simp
+  simpa [pairCellSize] using h.symm
 
 /-- Eleven occupied cells of size at least two partitioning 23 points have a unique cell of
 size three; all remaining cells have size two. -/
