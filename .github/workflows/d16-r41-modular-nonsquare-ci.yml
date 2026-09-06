@@ -1,0 +1,108 @@
+name: D16 R41 modular nonsquare kernel gate
+
+on:
+  push:
+    branches:
+      - d16-r41-modular-nonsquare-ci
+
+permissions:
+  contents: read
+
+jobs:
+  kernel-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Clone pinned Formal Conjectures
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/google-deepmind/formal-conjectures.git fc
+          cd fc
+          git checkout 8323e878b83fcd7f4a448256069352a265460d75
+          test "$(git rev-parse HEAD)" = "8323e878b83fcd7f4a448256069352a265460d75"
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.33.1"
+          grep -q '0df444a360eaa60ab8c11dca51a86af692955474' lake-manifest.json
+          sha256sum FormalConjectures/OEIS/67720.lean lean-toolchain lake-manifest.json
+
+      - name: Inject pinned R39-R41 modules
+        run: |
+          set -euxo pipefail
+          cd fc
+          mkdir -p FormalConjectures/Research
+          base=https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/97352ac63101e61c859784f49c4d8129993289f3/research
+          curl -fsSL "$base/D16R39DiscriminantBridge.lean" -o FormalConjectures/Research/D16R39DiscriminantBridge.lean
+          curl -fsSL "$base/D16R40SourceToQuadratic.lean" -o FormalConjectures/Research/D16R40SourceToQuadratic.lean
+          curl -fsSL "$base/D16R41ModularNonsquare.lean" -o FormalConjectures/Research/D16R41ModularNonsquare.lean
+          sha256sum FormalConjectures/Research/D16R39DiscriminantBridge.lean \
+            FormalConjectures/Research/D16R40SourceToQuadratic.lean \
+            FormalConjectures/Research/D16R41ModularNonsquare.lean
+          ! grep -R -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' \
+            FormalConjectures/Research/D16R39DiscriminantBridge.lean \
+            FormalConjectures/Research/D16R40SourceToQuadratic.lean \
+            FormalConjectures/Research/D16R41ModularNonsquare.lean
+
+      - name: Install elan exactly as upstream
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v1.4.2/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch pinned mathlib olean cache
+        run: |
+          set -euxo pipefail
+          cd fc
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Focused kernel build
+        run: |
+          set -euxo pipefail
+          cd fc
+          lake --wfail build \
+            FormalConjectures.Research.D16R39DiscriminantBridge \
+            FormalConjectures.Research.D16R40SourceToQuadratic \
+            FormalConjectures.Research.D16R41ModularNonsquare \
+            2>&1 | tee /tmp/d16_r41_focus.log
+          echo D16_R41_FOCUSED_KERNEL_PASS
+
+      - name: Generate aggregate files
+        run: |
+          set -euxo pipefail
+          cd fc
+          ./scripts/mk_all_formathlib.sh
+          rm -f FormalConjectures/All.lean
+          lake exe mk_all --lib FormalConjectures || true
+          mv FormalConjectures.lean FormalConjectures/All.lean
+          echo "set_option linter.style.moduleDocstring false" >> FormalConjectures/All.lean
+
+      - name: Full warning-free project build
+        run: |
+          set -euxo pipefail
+          cd fc
+          set -o pipefail
+          lake --wfail build 2>&1 | tee /tmp/d16_r41_lake_wfail_build.log
+          echo D16_R41_LAKE_WFAIL_BUILD_PASS
+
+      - name: Kernel axiom audit
+        run: |
+          set -euxo pipefail
+          cd fc
+          cat > AuditD16R41.lean <<'LEAN'
+          import FormalConjectures.Research.D16R41ModularNonsquare
+          #print axioms D16R41ModularNonsquare.no_integer_square_of_noSquareMod
+          #print axioms D16R41ModularNonsquare.no_integer_square_of_certificate
+          #print axioms D16R41ModularNonsquare.square_has_no_modular_certificate
+          #print axioms D16R41ModularNonsquare.modular_certificate_excludes_sourceSystem
+          #print axioms D16R41ModularNonsquare.concrete_discriminant
+          #print axioms D16R41ModularNonsquare.certificate_6732
+          #print axioms D16R41ModularNonsquare.concrete_sourceSystem_excluded
+          #print axioms D16R41ModularNonsquare.square_residue_mutation_rejected
+          #print axioms D16R41ModularNonsquare.positive_source_discriminant
+          #print axioms D16R41ModularNonsquare.positive_source_not_falsely_certified
+          LEAN
+          set -o pipefail
+          lake env lean AuditD16R41.lean 2>&1 | tee /tmp/d16_r41_axioms.log
+          ! grep -E 'sorryAx|native_decide\.ax|Lean\.ofReduceBool|Lean\.trustCompiler' /tmp/d16_r41_axioms.log
+          echo D16_R41_AXIOM_AUDIT_PASS
