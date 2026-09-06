@@ -1,6 +1,6 @@
-name = "d17_round22"
+name = "d17_round24"
 version = "0.1.0"
-defaultTargets = ["D17FiniteY"]
+defaultTargets = ["D17FiniteY", "D17RatioBridge"]
 
 [[require]]
 name = "formal_conjectures"
@@ -9,3 +9,6 @@ rev = "8323e878b83fcd7f4a448256069352a265460d75"
 
 [[lean_lib]]
 name = "D17FiniteY"
+
+[[lean_lib]]
+name = "D17RatioBridge"
