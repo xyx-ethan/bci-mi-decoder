@@ -1,6 +1,7 @@
 import D23Round21
 import D23Round22
 import D23Round23
+import D23Round24
 
 #print axioms D23Round21.normSq_eq_zero_iff
 #print axioms D23Round21.fullRank_scalar_norm_lt_sixteen
@@ -10,3 +11,7 @@ import D23Round23
 #print axioms D23Round22.axisCandidate_count_32
 #print axioms D23Round23.inertPrime_beta_axis
 #print axioms D23Round23.inertPrime_fullRank_scalar_norm_cases
+#print axioms D23Round24.ratioTwo_fullRank_norm_lt_four
+#print axioms D23Round24.inertPrime_ratioTwo_unit_and_gap
+#print axioms D23Round24.inertPrime_ratioFour_no_fullRank_scalar
+#print axioms D23Round24.unitGaussian_count_4
