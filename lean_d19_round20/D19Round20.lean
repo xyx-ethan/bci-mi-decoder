@@ -1,18 +1,19 @@
-import FormalConjectures.Paper.MonochromaticQuantumGraph
+import PMTree6
+import PMTree8
 
 /-!
 # D19 Round 20: a characteristic-zero pivot-star contraction bridge
 
 For an eight-vertex, three-colour weight system over a field, sum over the
-colours of the first two vertices.  The matching expansion consists of the
+colours of the first two vertices. The matching expansion consists of the
 residual six-vertex matching sum multiplied by the all-colour mass of the
 pivot edge, plus a rank-two correction on residual edges.
 
 If that correction is supported on the star at residual vertex `0`, no perfect
-matching can use it more than once.  Adding the normalized correction and then
+matching can use it more than once. Adding the normalized correction and then
 multiplying all edges incident to residual vertex `0` by the pivot mass gives a
 six-vertex weight system whose amplitude is exactly the sum over the nine
-pivot-colour extensions.  No root extraction and no finite search are used.
+pivot-colour extensions. No root extraction and no finite search are used.
 -/
 
 open scoped BigOperators
@@ -59,21 +60,21 @@ def rightProfile {K : Type} [CommSemiring K] (W : WeightsN 8 3 K)
   ∑ b : Fin 3, W (mkEdge 1 (liftResidual u) b i)
 
 /-- Rank-two correction produced when the two pivots are matched to two distinct
-residual vertices.  Only canonically ordered residual edges are read by `pmSumN`. -/
+residual vertices. Only canonically ordered residual edges are read by `pmSumN`. -/
 def pivotCorrection {K : Type} [CommSemiring K] (W : WeightsN 8 3 K)
     (e : EdgeN 6 3) : K :=
   leftProfile W e.u e.i * rightProfile W e.v e.j +
     rightProfile W e.u e.i * leftProfile W e.v e.j
 
-/-- The correction has canonical star support at residual vertex `0`.
-The condition is intentionally stronger on unused raw `EdgeN` coordinates; this makes
-its relation to the recursive ordered matching enumeration explicit. -/
+/-- The correction has ordered-kernel star support at residual vertex `0`.
+This is stronger than merely requiring star support on the canonical coordinates
+read by `pmSumN`: it also sets unused raw coordinates with `e.u ≠ 0` to zero. -/
 def CorrectionOnZeroStar {K : Type} [CommSemiring K]
     (W : WeightsN 8 3 K) : Prop :=
   ∀ e : EdgeN 6 3, e.u ≠ 0 → pivotCorrection W e = 0
 
 /-- Normalize the correction by the pivot mass and multiply every canonical edge
-incident to residual vertex `0` by the pivot mass.  Every perfect matching has exactly
+incident to residual vertex `0` by the pivot mass. Every perfect matching has exactly
 one such edge, so this final star scaling clears the normalization without extracting
 a cube root. -/
 noncomputable def pivotStarContract {K : Type} [Field K]
@@ -82,9 +83,9 @@ noncomputable def pivotStarContract {K : Type} [Field K]
     let updated := W (residualEdge e) + (pivotMass W)⁻¹ * pivotCorrection W e
     if e.u = 0 then pivotMass W * updated else updated
 
-/-- Exact fixed-size contraction identity.  Under star support, higher correction
-terms in the six-vertex matching expansion vanish identically. -/
-set_option maxHeartbeats 5000000 in
+/-- Exact fixed-size contraction identity. Under ordered-kernel star support,
+higher correction terms in the six-vertex matching expansion vanish identically. -/
+set_option maxHeartbeats 10000000 in
 set_option maxRecDepth 100000 in
 theorem pmSumN_pivotStarContract
     {K : Type} [Field K]
@@ -95,9 +96,13 @@ theorem pmSumN_pivotStarContract
     pmSumN 6 3 (pivotStarContract W) ι =
       ∑ a : Fin 3, ∑ b : Fin 3, pmSumN 8 3 W (extendColor a b ι) := by
   classical
-  simp [pmSumN, pmSumList, pmSumListAux, vertices, pivotStarContract,
-    pivotMass, pivotCorrection, leftProfile, rightProfile, residualEdge,
-    liftResidual, extendColor, CorrectionOnZeroStar, hStar, Fin.sum_univ_succ]
+  have hStar' : ∀ e : EdgeN 6 3, e.u ≠ 0 → pivotCorrection W e = 0 := hStar
+  rw [pmSumN_six_eq_tree]
+  simp_rw [pmSumN_eight_eq_tree]
+  simp [pmTree6, pmTree8, pmTree8Branch1, pmTree8Branch2, pmTree8Branch3,
+    pmTree8Branch4, pmTree8Branch5, pmTree8Branch6, pmTree8Branch7,
+    pivotStarContract, pivotMass, pivotCorrection, leftProfile, rightProfile,
+    residualEdge, liftResidual, extendColor, hStar', Fin.sum_univ_succ]
   field_simp [hs]
   ring
 
