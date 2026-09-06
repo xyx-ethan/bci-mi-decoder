@@ -52,19 +52,16 @@ theorem sigma_prime_pow_seventeen {p : ℕ} (hp : p.Prime) :
     ArithmeticFunction.sigma 1 (p^17) = S17N p := by
   rw [ArithmeticFunction.sigma_one_apply_prime_pow hp]
   simp [Finset.sum_range_succ, S17N]
-  ring
 
 theorem sigma_prime_pow_nine {p : ℕ} (hp : p.Prime) :
     ArithmeticFunction.sigma 1 (p^9) = S9N p := by
   rw [ArithmeticFunction.sigma_one_apply_prime_pow hp]
   simp [Finset.sum_range_succ, S9N]
-  ring
 
 theorem sigma_prime_pow_three' {p : ℕ} (hp : p.Prime) :
     ArithmeticFunction.sigma 1 (p^3) = S3N p := by
   rw [ArithmeticFunction.sigma_one_apply_prime_pow hp]
   simp [Finset.sum_range_succ, S3N]
-  ring
 
 theorem sigma_two_pow_fourteen :
     ArithmeticFunction.sigma 1 (2^14) = 32767 := by
@@ -226,7 +223,6 @@ theorem one_add_inv_lt_R17 {t : ℚ} (ht : 1 < t) :
   have hden : 0 < (1 : ℚ) + t^17 := by positivity
   have hrewrite : 1 + 1 / t = (t + 1) / t := by
     field_simp
-    ring
   rw [hrewrite]
   simp only [R17]
   rw [div_lt_div_iff₀ ht0 hden]
@@ -246,7 +242,7 @@ theorem one_add_inv_lt_R17 {t : ℚ} (ht : 1 < t) :
           t^10 + t^11 + t^12 + t^13 + t^14 + t^15 + t^16)) := by
     simp [S17]
     ring
-  rw [hid]
+  rw [mul_comm (S17 t) t, hid]
   linarith
 
 theorem R17_lt_U {t : ℚ} (ht : 1 < t) : R17 t < D17Round22.U t := by
@@ -344,13 +340,12 @@ theorem p_upper_of_ratio {p q r : ℚ}
 theorem p_lower_raw_of_ratio {p q r : ℚ}
     (hp : 1 < p) (hq : 1 < q) (hr : 1 < r)
     (hEq : R17 p * R9 q * R3 r = Target) :
-    (10923 : ℚ) < p := by
+    (10922 : ℚ) < p := by
   have hrt : R17 p < Target := R17_lt_target_of_ratio hp hq hr hEq
   have hlo : 1 + 1 / p < Target := lt_trans (one_add_inv_lt_R17 hp) hrt
   have hp0 : 0 < p := by linarith
   have hre : 1 + 1 / p = (p + 1) / p := by
     field_simp
-    ring
   rw [hre] at hlo
   have hden : (0 : ℚ) < 32767 := by norm_num
   rw [show Target = (32770 : ℚ) / 32767 by rfl] at hlo
@@ -358,16 +353,16 @@ theorem p_lower_raw_of_ratio {p q r : ℚ}
   norm_num at hlo ⊢
   linarith
 
-theorem prime_gap_10937 {p : ℕ} (hp : p.Prime) (hlo : 10923 < p) :
+theorem prime_gap_10937 {p : ℕ} (hp : p.Prime) (hlo : 10922 < p) :
     10937 ≤ p := by
   by_contra hnot
   have hhi : p ≤ 10936 := by omega
-  have hlo' : 10924 ≤ p := by omega
+  have hlo' : 10923 ≤ p := by omega
   interval_cases p <;> norm_num at hp
 
 theorem target_lt_U10937_mul_Uq_sq {p q r : ℚ}
     (hp0 : 1 < p) (hq0 : 1 < q) (hr0 : 1 < r)
-    (hpmin : (10937 : ℚ) ≤ p) (hpq : p ≤ q) (hqr : q ≤ r)
+    (hpmin : (10937 : ℚ) ≤ p) (_hpq : p ≤ q) (hqr : q ≤ r)
     (hEq : R17 p * R9 q * R3 r = Target) :
     Target < D17Round22.U (10937 : ℚ) * D17Round22.U q ^ 2 := by
   have hUp : D17Round22.U p ≤ D17Round22.U (10937 : ℚ) :=
@@ -432,7 +427,7 @@ theorem A_branch_finite_box {p q r : ℕ}
   have hpqQ : (p : ℚ) ≤ q := by exact_mod_cast hpq.le
   have hqrQ : (q : ℚ) ≤ r := by exact_mod_cast hqr.le
   have hpLowerRawQ := p_lower_raw_of_ratio hpQ hqQ hrQ hratio
-  have hpLowerRaw : 10923 < p := by exact_mod_cast hpLowerRawQ
+  have hpLowerRaw : 10922 < p := by exact_mod_cast hpLowerRawQ
   have hpMin : 10937 ≤ p := prime_gap_10937 hp hpLowerRaw
   have hpMinQ : (10937 : ℚ) ≤ p := by exact_mod_cast hpMin
   have hpUpperQ := p_upper_of_ratio hpQ hpqQ hqrQ hratio
