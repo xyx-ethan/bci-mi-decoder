@@ -1,0 +1,6 @@
+import D19PivotContraction
+
+#print axioms D19PivotContraction.allEqual_extend_iff
+#print axioms D19PivotContraction.contracted_pmSum_eq_extension_sum
+#print axioms D19PivotContraction.eqSystem6_of_eqSystem8_threeActivePivot
+#print axioms D19PivotContraction.no_eqSystem8_threeActivePivot
