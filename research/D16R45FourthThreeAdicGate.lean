@@ -9,10 +9,6 @@ discriminant has a factor `81`.  This module proves an exact square descent:
 a square discriminant descends to a square of the normalized quotient.  The
 normalized residue `2 (mod 3)` is therefore impossible.
 
-A finite theorem also checks the complete local residue classifier modulo 243:
-for the abstract residues `H mod 81` and `J mod 3`, the surviving R42--R45
-conditions are exactly the square residues of `-3H + 81J` modulo 243.
-
 The results are strict auxiliary theorems for the open A067720 conjecture.  They
 do not assume the conjecture and do not claim recovery of the Round-38 row
 generator.
@@ -98,12 +94,14 @@ theorem badFourthLift_normalized_noIntegerSquare
       w ^ 2 = fourthNormalized q r u := hw
       _ = 3 * t + 2 := hk
   have hcast := congrArg (fun y : ℤ => (y : ZMod 3)) hwt
-  have hthree : (3 : ZMod 3) = 0 := by decide
-  have hcast' : (w : ZMod 3) ^ 2 = 2 := by
-    calc
-      (w : ZMod 3) ^ 2 = 3 * (t : ZMod 3) + 2 := hcast
-      _ = 2 := by rw [hthree]; simp
-  exact noSquareTwoModThree (w : ZMod 3) hcast'
+  have hcast' :
+      (w : ZMod 3) ^ 2 = (((3 * t + 2 : ℤ)) : ZMod 3) := by
+    simpa only [Int.cast_pow] using hcast
+  have hrhs : (((3 * t + 2 : ℤ)) : ZMod 3) = 2 := by
+    change (3 : ZMod 3) * (t : ZMod 3) + 2 = 2
+    rw [show (3 : ZMod 3) = 0 by decide]
+    simp
+  exact noSquareTwoModThree (w : ZMod 3) (hcast'.trans hrhs)
 
 /-- The bad normalized class forces residue 162 modulo 243. -/
 theorem badFourthLift_discriminant_mod243
@@ -183,48 +181,6 @@ theorem square_discriminant_not_badFourthLift
     ¬ BadFourthLiftResidue q r m d := by
   intro hbad
   exact badFourthLift_noIntegerSquare hbad hsq
-
-/-! ## Complete abstract residue classifier -/
-
-/-- The discriminant residue determined by `H mod 81` and `J mod 3`. -/
-def localDelta243 (h : Fin 81) (j : Fin 3) : ZMod 243 :=
-  ((-3 * (h.1 : ℤ) + 81 * (j.1 : ℤ) : ℤ) : ZMod 243)
-
-/-- The combined R42--R45 compatibility condition on the two local residues.
-The subtraction is safe in `Nat`, since `j+3 ≥ 3 > h/27`. -/
-def LocalCompatible243 (h : Fin 81) (j : Fin 3) : Prop :=
-  h.1 % 9 = 6 ∨
-    (h.1 % 27 = 0 ∧ (j.1 + 3 - h.1 / 27) % 3 ≠ 2)
-
-/-- Executable square-root search over the finite ring `ZMod 243`. -/
-def hasSquareRoot243 (a : ZMod 243) : Bool :=
-  (Finset.univ : Finset (ZMod 243)).toList.any fun x =>
-    decide (x ^ 2 = a)
-
-/-- The executable square-root search is propositionally exact. -/
-theorem hasSquareRoot243_eq_true_iff (a : ZMod 243) :
-    hasSquareRoot243 a = true ↔ ∃ x : ZMod 243, x ^ 2 = a := by
-  simp [hasSquareRoot243]
-
-set_option maxHeartbeats 0 in
-set_option maxRecDepth 1000000 in
-/-- Complete finite Boolean classification of all 81×3 abstract local residue
-pairs. -/
-theorem completeLocalBooleanClassification :
-    ∀ h : Fin 81, ∀ j : Fin 3,
-      hasSquareRoot243 (localDelta243 h j) = true ↔
-        LocalCompatible243 h j := by
-  intro h j
-  fin_cases h <;> fin_cases j <;> decide
-
-/-- Complete finite classification of all 81×3 abstract local residue pairs. -/
-theorem completeLocalResidueClassification :
-    ∀ h : Fin 81, ∀ j : Fin 3,
-      (∃ x : ZMod 243, x ^ 2 = localDelta243 h j) ↔
-        LocalCompatible243 h j := by
-  intro h j
-  rw [← hasSquareRoot243_eq_true_iff]
-  exact completeLocalBooleanClassification h j
 
 /-! ## Exact controls -/
 
