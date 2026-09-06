@@ -43,7 +43,7 @@ jobs:
             -o FormalConjectures/Research/D16R44ThirdThreeAdicGate.lean
           curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/research/D16R45FourthThreeAdicGate.lean" \
             -o FormalConjectures/Research/D16R45FourthThreeAdicGate.lean
-          echo 'fb111df019a408f9ea0d079d1a618318f54f8849b69d77f82bacc9ddf33c397c  FormalConjectures/Research/D16R45FourthThreeAdicGate.lean' | sha256sum -c -
+          echo '04e03c5192a50e73601e2e38a494e1eaa4ebc129906cfc867d93f81f356ee104  FormalConjectures/Research/D16R45FourthThreeAdicGate.lean' | sha256sum -c -
           sha256sum FormalConjectures/Research/D16R*.lean
           ! grep -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' FormalConjectures/Research/D16R*.lean
 
@@ -112,6 +112,8 @@ jobs:
           #print axioms D16R45FourthThreeAdicGate.badFourthLift_noIntegerRoot
           #print axioms D16R45FourthThreeAdicGate.badFourthLift_excludes_sourceSystem
           #print axioms D16R45FourthThreeAdicGate.square_discriminant_not_badFourthLift
+          #print axioms D16R45FourthThreeAdicGate.hasSquareRoot243_eq_true_iff
+          #print axioms D16R45FourthThreeAdicGate.completeLocalBooleanClassification
           #print axioms D16R45FourthThreeAdicGate.completeLocalResidueClassification
           #print axioms D16R45FourthThreeAdicGate.bad_control
           #print axioms D16R45FourthThreeAdicGate.bad_control_values
