@@ -41,17 +41,20 @@ def plus (z : R × R) : R := z.1 + s * z.2
 def minus (z : R × R) : R := z.1 - s * z.2
 
 theorem s_sq : s ^ 2 = 12 := by
-  norm_num [s, modulus]
+  change (463611 : ZMod 4377409) ^ 2 = 12
+  decide
 
 theorem u_formula : u = 7 + 2 * s := by
-  norm_num [u, s, modulus]
+  change (927229 : ZMod 4377409) = 7 + 2 * 463611
+  decide
 
 theorem v_formula : v = 7 - 2 * s := by
-  norm_num [v, s, modulus]
+  change (3450194 : ZMod 4377409) = 7 - 2 * 463611
+  decide
 
 theorem plus_step (z : R × R) : plus (stepZ z) = u * plus z := by
   rcases z with ⟨x, y⟩
-  simp only [plus, stepZ, Prod.fst, Prod.snd]
+  change 7 * x + 24 * y + s * (2 * x + 7 * y) = u * (x + s * y)
   rw [u_formula]
   have hs : s * s = 12 := by
     simpa [pow_two] using s_sq
@@ -64,7 +67,7 @@ theorem plus_step (z : R × R) : plus (stepZ z) = u * plus z := by
 
 theorem minus_step (z : R × R) : minus (stepZ z) = v * minus z := by
   rcases z with ⟨x, y⟩
-  simp only [minus, stepZ, Prod.fst, Prod.snd]
+  change 7 * x + 24 * y - s * (2 * x + 7 * y) = v * (x - s * y)
   rw [v_formula]
   have hs : s * s = 12 := by
     simpa [pow_two] using s_sq
@@ -92,25 +95,56 @@ theorem minus_iterate (n : ℕ) (z : R × R) :
       ring
 
 theorem u_period : u ^ period = 1 := by
-  change (927229 : ZMod 4377409) ^ 1094352 = 1
-  reduce_mod_char
+  let w : R := 1758704
+  have hw4 : w ^ 4 = u := by
+    change (1758704 : ZMod 4377409) ^ 4 = 927229
+    decide
+  have hw0 : w ≠ 0 := by
+    change (1758704 : ZMod 4377409) ≠ 0
+    decide
+  calc
+    u ^ period = (w ^ 4) ^ period := by rw [hw4]
+    _ = w ^ (4 * period) := by rw [← pow_mul]
+    _ = w ^ (modulus - 1) := by
+          congr 1
+          norm_num [period, modulus]
+    _ = 1 := ZMod.pow_card_sub_one_eq_one hw0
 
 theorem v_period : v ^ period = 1 := by
-  change (3450194 : ZMod 4377409) ^ 1094352 = 1
-  reduce_mod_char
+  let w : R := 819756
+  have hw4 : w ^ 4 = v := by
+    change (819756 : ZMod 4377409) ^ 4 = 3450194
+    decide
+  have hw0 : w ≠ 0 := by
+    change (819756 : ZMod 4377409) ≠ 0
+    decide
+  calc
+    v ^ period = (w ^ 4) ^ period := by rw [hw4]
+    _ = w ^ (4 * period) := by rw [← pow_mul]
+    _ = w ^ (modulus - 1) := by
+          congr 1
+          norm_num [period, modulus]
+    _ = 1 := ZMod.pow_card_sub_one_eq_one hw0
 
 theorem eq_of_plus_minus {z w : R × R}
     (hp : plus z = plus w) (hm : minus z = minus w) : z = w := by
   rcases z with ⟨x, y⟩
   rcases w with ⟨x', y'⟩
-  simp only [plus, minus, Prod.fst, Prod.snd] at hp hm
+  change x + s * y = x' + s * y' at hp
+  change x - s * y = x' - s * y' at hm
   apply Prod.ext
   · have h : (2 : R) * x = 2 * x' := by
       linear_combination hp + hm
-    exact mul_left_cancel₀ (by norm_num : (2 : R) ≠ 0) h
+    have htwo : (2 : R) ≠ 0 := by
+      change (2 : ZMod 4377409) ≠ 0
+      decide
+    exact mul_left_cancel₀ htwo h
   · have h : (2 * s : R) * y = (2 * s) * y' := by
       linear_combination hp - hm
-    exact mul_left_cancel₀ (by norm_num [s, modulus] : (2 * s : R) ≠ 0) h
+    have hs : (2 * s : R) ≠ 0 := by
+      change (2 * (463611 : ZMod 4377409)) ≠ 0
+      decide
+    exact mul_left_cancel₀ hs h
 
 theorem stepZ_period : stepZ^[period] = id := by
   funext z
@@ -133,24 +167,15 @@ theorem embed_iterate (n : ℕ) (z : ℕ × ℕ) :
         embed_step, ih]
 
 theorem init_embed : embed initN = initZ := by
-  norm_num [embed, initN, initZ, modulus]
+  norm_num [embed, initN, initZ]
 
 theorem stepZ_progression (t : ℕ) :
     (stepZ^[112 + period * t]) initZ = (stepZ^[112]) initZ := by
-  induction t with
-  | zero => simp
-  | succ t ih =>
-      calc
-        (stepZ^[112 + period * (t + 1)]) initZ
-            = (stepZ^[(112 + period * t) + period]) initZ := by
-                congr 2
-                omega
-        _ = (stepZ^[112 + period * t]) ((stepZ^[period]) initZ) := by
-              rw [Function.iterate_add_apply]
-        _ = (stepZ^[112 + period * t]) initZ := by
-              rw [stepZ_period]
-              rfl
-        _ = (stepZ^[112]) initZ := ih
+  have hper : stepZ^[period * t] = id := by
+    rw [Function.iterate_mul, stepZ_period]
+    simp
+  rw [Function.iterate_add_apply, hper]
+  rfl
 
 set_option maxHeartbeats 0 in
 set_option maxRecDepth 100000 in
@@ -169,13 +194,19 @@ theorem cast_pell (n : ℕ) : embed (pell n) = (stepZ^[n]) initZ := by
 
 theorem dvd_progression (t : ℕ) :
     modulus ∣ (pell (112 + period * t)).1 := by
-  have hx : (((2 * (pell (112 + period * t)).1 + 1 : ℕ) : R) = 1) := by
+  let P := (pell (112 + period * t)).1
+  have hx : (((2 * P + 1 : ℕ) : R) = 1) := by
     have h := congr_arg Prod.fst (cast_pell (112 + period * t))
-    simpa [embed] using h.trans (modular_zero_progression t)
-  have hp : (((pell (112 + period * t)).1 : ℕ) : R) = 0 := by
-    have htwo : (2 : R) ≠ 0 := by norm_num
-    apply mul_left_cancel₀ htwo
-    linear_combination hx
+    simpa [embed, P] using h.trans (modular_zero_progression t)
+  have hx' : (2 : R) * (P : R) + 1 = 1 := by
+    simpa only [Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat, Nat.cast_one] using hx
+  have hp2 : (2 : R) * (P : R) = 0 := by
+    linear_combination hx'
+  have htwo : (2 : R) ≠ 0 := by
+    change (2 : ZMod 4377409) ≠ 0
+    decide
+  have hp : ((P : ℕ) : R) = 0 :=
+    (mul_eq_zero.mp hp2).resolve_left htwo
   exact (ZMod.natCast_eq_zero_iff _ _).mp hp
 
 theorem fst_lt_stepN (z : ℕ × ℕ) : z.1 < (stepN z).1 := by
@@ -204,8 +235,7 @@ theorem modulus_lt_p112 : modulus < (pell 112).1 := by
 theorem p112_le_progression (t : ℕ) :
     (pell 112).1 ≤ (pell (112 + period * t)).1 := by
   change ((stepN^[112]) initN).1 ≤ ((stepN^[112 + period * t]) initN).1
-  rw [show 112 + period * t = period * t + 112 by omega,
-    Function.iterate_add_apply]
+  rw [Nat.add_comm 112 (period * t), Function.iterate_add_apply]
   exact fst_le_iterate _ _
 
 theorem not_prime_progression (t : ℕ) :
