@@ -4,9 +4,9 @@ import D17FiniteY
 # D17 Round 24: bridge from the A063880 arithmetic equation to the ratio equation
 
 The target branch is `n = 2^17 * x^4 * y^3 * z^3` with distinct odd prime
-bases `x,y,z`.  This file first establishes symbolic prime-power and
-coprime-product formulas for ordinary and unitary divisor sums, then builds
-the arithmetic bridge.
+bases `x,y,z`.  This file proves symbolic prime-power and coprime-product
+formulas for ordinary and unitary divisor sums, then derives the exact
+ratio equation used by Round 23 directly from `OeisA63880.A`.
 -/
 
 namespace D17Round24
@@ -178,5 +178,133 @@ theorem sigma_two_pow_seventeen :
     ArithmeticFunction.sigma 1 (2 ^ 17) = 262143 := by
   rw [ArithmeticFunction.sigma_one_apply_prime_pow Nat.prime_two]
   norm_num [Finset.sum_range_succ]
+
+theorem branch_coprimes {x y z : ℕ}
+    (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
+    (h2y : 2 < y) (hyz : y < z) (hzx : z < x) :
+    (2 ^ 17).Coprime (x ^ 4) ∧
+      ((2 ^ 17) * x ^ 4).Coprime (y ^ 3) ∧
+      (((2 ^ 17) * x ^ 4) * y ^ 3).Coprime (z ^ 3) := by
+  have h2x : 2 ≠ x := by omega
+  have h2z : 2 ≠ z := by omega
+  have hxy : x ≠ y := by omega
+  have hxz : x ≠ z := by omega
+  have hyz_ne : y ≠ z := by omega
+  have c2x : (2 ^ 17).Coprime (x ^ 4) :=
+    Nat.coprime_pow_primes 17 4 Nat.prime_two hx h2x
+  have c2y : (2 ^ 17).Coprime (y ^ 3) :=
+    Nat.coprime_pow_primes 17 3 Nat.prime_two hy (by omega)
+  have c2z : (2 ^ 17).Coprime (z ^ 3) :=
+    Nat.coprime_pow_primes 17 3 Nat.prime_two hz h2z
+  have cxy : (x ^ 4).Coprime (y ^ 3) :=
+    Nat.coprime_pow_primes 4 3 hx hy hxy
+  have cxz : (x ^ 4).Coprime (z ^ 3) :=
+    Nat.coprime_pow_primes 4 3 hx hz hxz
+  have cyz : (y ^ 3).Coprime (z ^ 3) :=
+    Nat.coprime_pow_primes 3 3 hy hz hyz_ne
+  refine ⟨c2x, Nat.Coprime.mul_left c2y cxy, ?_⟩
+  exact Nat.Coprime.mul_left (Nat.Coprime.mul_left c2z cxz) cyz
+
+theorem sigma_branch {x y z : ℕ}
+    (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
+    (h2y : 2 < y) (hyz : y < z) (hzx : z < x) :
+    ArithmeticFunction.sigma 1 (BranchN x y z) =
+      262143 * Phi5N x * ((y + 1) * (y ^ 2 + 1)) * ((z + 1) * (z ^ 2 + 1)) := by
+  rcases branch_coprimes hx hy hz h2y hyz hzx with ⟨c2x, cAxy, cAxyz⟩
+  simp only [BranchN]
+  rw [ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime cAxyz,
+    ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime cAxy,
+    ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime c2x,
+    sigma_two_pow_seventeen, sigma_prime_pow_four hx,
+    sigma_prime_pow_three hy, sigma_prime_pow_three hz]
+  ring
+
+theorem usigma_branch {x y z : ℕ}
+    (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
+    (h2y : 2 < y) (hyz : y < z) (hzx : z < x) :
+    usigma (BranchN x y z) =
+      131073 * (1 + x ^ 4) * (1 + y ^ 3) * (1 + z ^ 3) := by
+  rcases branch_coprimes hx hy hz h2y hyz hzx with ⟨c2x, cAxy, cAxyz⟩
+  have h20 : 2 ^ 17 ≠ 0 := by norm_num
+  have hx40 : x ^ 4 ≠ 0 := pow_ne_zero 4 hx.ne_zero
+  have hy30 : y ^ 3 ≠ 0 := pow_ne_zero 3 hy.ne_zero
+  have hz30 : z ^ 3 ≠ 0 := pow_ne_zero 3 hz.ne_zero
+  have h2x0 : (2 ^ 17) * x ^ 4 ≠ 0 := mul_ne_zero h20 hx40
+  have h2xy0 : ((2 ^ 17) * x ^ 4) * y ^ 3 ≠ 0 := mul_ne_zero h2x0 hy30
+  simp only [BranchN]
+  rw [usigma_mul_of_coprime cAxyz h2xy0 hz30,
+    usigma_mul_of_coprime cAxy h2x0 hy30,
+    usigma_mul_of_coprime c2x h20 hx40,
+    usigma_two_pow_seventeen, usigma_prime_pow_four hx,
+    usigma_prime_pow_three hy, usigma_prime_pow_three hz]
+  norm_num
+  ring
+
+theorem A_branch_uncancelled {x y z : ℕ}
+    (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
+    (h2y : 2 < y) (hyz : y < z) (hzx : z < x)
+    (hA : A (BranchN x y z)) :
+    262143 * Phi5N x * ((y + 1) * (y ^ 2 + 1)) * ((z + 1) * (z ^ 2 + 1)) =
+      262146 * (1 + x ^ 4) * (1 + y ^ 3) * (1 + z ^ 3) := by
+  calc
+    262143 * Phi5N x * ((y + 1) * (y ^ 2 + 1)) * ((z + 1) * (z ^ 2 + 1)) =
+        ArithmeticFunction.sigma 1 (BranchN x y z) :=
+      (sigma_branch hx hy hz h2y hyz hzx).symm
+    _ = 2 * usigma (BranchN x y z) := hA.2
+    _ = 2 * (131073 * (1 + x ^ 4) * (1 + y ^ 3) * (1 + z ^ 3)) := by
+      rw [usigma_branch hx hy hz h2y hyz hzx]
+    _ = 262146 * (1 + x ^ 4) * (1 + y ^ 3) * (1 + z ^ 3) := by ring
+
+theorem A_branch_cross_rat {x y z : ℕ}
+    (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
+    (h2y : 2 < y) (hyz : y < z) (hzx : z < x)
+    (hA : A (BranchN x y z)) :
+    (262143 : ℚ) * D17Round22.Phi5 (x : ℚ) * ((y : ℚ) ^ 2 + 1) * ((z : ℚ) ^ 2 + 1) =
+      (262146 : ℚ) * ((x : ℚ) ^ 4 + 1) * D17Round22.Phi6 (y : ℚ) *
+        D17Round22.Phi6 (z : ℚ) := by
+  have hnat := A_branch_uncancelled hx hy hz h2y hyz hzx hA
+  have hq := congrArg (fun t : ℕ => (t : ℚ)) hnat
+  push_cast at hq
+  have hcommon :
+      (((y : ℚ) + 1) * ((z : ℚ) + 1)) *
+          ((262143 : ℚ) * D17Round22.Phi5 (x : ℚ) * ((y : ℚ) ^ 2 + 1) *
+            ((z : ℚ) ^ 2 + 1)) =
+        (((y : ℚ) + 1) * ((z : ℚ) + 1)) *
+          ((262146 : ℚ) * ((x : ℚ) ^ 4 + 1) * D17Round22.Phi6 (y : ℚ) *
+            D17Round22.Phi6 (z : ℚ)) := by
+    simp [Phi5N, D17Round22.Phi5, D17Round22.Phi6] at hq ⊢
+    ring_nf at hq ⊢
+    exact hq
+  have hcommon_ne : ((y : ℚ) + 1) * ((z : ℚ) + 1) ≠ 0 := by positivity
+  exact mul_left_cancel₀ hcommon_ne hcommon
+
+theorem A_branch_ratio {x y z : ℕ}
+    (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
+    (h2y : 2 < y) (hyz : y < z) (hzx : z < x)
+    (hA : A (BranchN x y z)) :
+    D17Round22.R4 (x : ℚ) * D17Round22.R3 (y : ℚ) * D17Round22.R3 (z : ℚ) =
+      D17Round22.Target := by
+  have hcross := A_branch_cross_rat hx hy hz h2y hyz hzx hA
+  have hyQ : (1 : ℚ) < y := by exact_mod_cast (show 1 < y by omega)
+  have hzQ : (1 : ℚ) < z := by exact_mod_cast (show 1 < z by omega)
+  have hdx : (x : ℚ) ^ 4 + 1 ≠ 0 := by positivity
+  have hdy : D17Round22.Phi6 (y : ℚ) ≠ 0 := (D17Round22.phi6_pos hyQ).ne'
+  have hdz : D17Round22.Phi6 (z : ℚ) ≠ 0 := (D17Round22.phi6_pos hzQ).ne'
+  rw [D17Round22.R4, D17Round22.R3, D17Round22.Target]
+  field_simp [hdx, hdy, hdz]
+  ring_nf at hcross ⊢
+  exact hcross
+
+theorem A_branch_finite_y {x y z : ℕ}
+    (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
+    (h2y : 2 < y) (hyz : y < z) (hzx : z < x)
+    (hA : A (BranchN x y z)) :
+    y < 262145 := by
+  have hratio := A_branch_ratio hx hy hz h2y hyz hzx hA
+  have hyQ : (1 : ℚ) < y := by exact_mod_cast (show 1 < y by omega)
+  have hyzQ : (y : ℚ) ≤ z := by exact_mod_cast hyz.le
+  have hzxQ : (z : ℚ) < x := by exact_mod_cast hzx
+  have hQ := D17Round22.finite_y_bound_remaining_order hyQ hyzQ hzxQ hratio
+  exact_mod_cast hQ
 
 end D17Round24
