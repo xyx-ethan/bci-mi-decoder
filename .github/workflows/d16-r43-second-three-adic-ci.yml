@@ -33,7 +33,7 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/3a21d3e787b990977547d31aee7ec000b581a0c0/research/D16R40SourceToQuadratic.lean -o FormalConjectures/Research/D16R40SourceToQuadratic.lean
           curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/f9208b108bfc558a993e3d4fef933f5b4e030af6/research/D16R41ModularNonsquare.lean -o FormalConjectures/Research/D16R41ModularNonsquare.lean
           curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/61e4e778b492c49b0d956d308d639e0e97226bd4/research/D16R42ThreeAdicGate.lean -o FormalConjectures/Research/D16R42ThreeAdicGate.lean
-          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/3e29a4eaa026d8c50f4058d34d9fadda2bfbd515/research/D16R43SecondThreeAdicGate.lean -o FormalConjectures/Research/D16R43SecondThreeAdicGate.lean
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/5675f1e866ecd4b79c2acf41e24a354744c6d019/research/D16R43SecondThreeAdicGate.lean -o FormalConjectures/Research/D16R43SecondThreeAdicGate.lean
           sha256sum FormalConjectures/Research/D16R*.lean
           ! grep -ER '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' FormalConjectures/Research/D16R39DiscriminantBridge.lean FormalConjectures/Research/D16R40SourceToQuadratic.lean FormalConjectures/Research/D16R41ModularNonsquare.lean FormalConjectures/Research/D16R42ThreeAdicGate.lean FormalConjectures/Research/D16R43SecondThreeAdicGate.lean
 
