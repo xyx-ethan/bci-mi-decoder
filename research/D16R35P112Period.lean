@@ -65,11 +65,11 @@ theorem alpha_formula : alpha = 7 + 2 * s := by
 
 theorem beta_formula : beta = 7 - 2 * s := by
   change (3450194 : ZMod 4377409) = 7 - 2 * 463611
-  norm_num
+  reduce_mod_char
 
 theorem inv4_spec : inv4 * 4 = (1 : R) := by
   change (3283057 : ZMod 4377409) * 4 = 1
-  norm_num
+  reduce_mod_char
 
 theorem alpha_period : alpha ^ period = (1 : R) := by
   change (927229 : ZMod 4377409) ^ 1094352 = 1
@@ -80,33 +80,29 @@ theorem beta_period : beta ^ period = (1 : R) := by
   reduce_mod_char
 
 theorem u_succ (n : ℕ) : u (n + 1) = alpha * u n := by
-  simp only [u, p, q, pell, step, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat,
-    Prod.fst, Prod.snd]
+  simp only [u, p, q, pell, step, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat]
   rw [alpha_formula]
   have hs : s * s = (12 : R) := by simpa [pow_two] using s_sq
-  rw [show (2 : R) * s * s = 24 by rw [mul_assoc, hs]; norm_num]
-  ring
+  linear_combination -(2 * ((pell n).2 : R)) * hs
 
 theorem v_succ (n : ℕ) : v (n + 1) = beta * v n := by
-  simp only [v, p, q, pell, step, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat,
-    Prod.fst, Prod.snd]
+  simp only [v, p, q, pell, step, Nat.cast_add, Nat.cast_mul, Nat.cast_ofNat]
   rw [beta_formula]
   have hs : s * s = (12 : R) := by simpa [pow_two] using s_sq
-  rw [show (2 : R) * s * s = 24 by rw [mul_assoc, hs]; norm_num]
-  ring
+  linear_combination -(2 * ((pell n).2 : R)) * hs
 
 theorem u_closed (n : ℕ) : u n = u 0 * alpha ^ n := by
   induction n with
   | zero => simp
   | succ n ih =>
-      rw [show Nat.succ n = n + 1 by omega, u_succ, ih, pow_succ]
+      rw [u_succ, ih, pow_succ]
       ring
 
 theorem v_closed (n : ℕ) : v n = v 0 * beta ^ n := by
   induction n with
   | zero => simp
   | succ n ih =>
-      rw [show Nat.succ n = n + 1 by omega, v_succ, ih, pow_succ]
+      rw [v_succ, ih, pow_succ]
       ring
 
 theorem p_formula (n : ℕ) :
@@ -117,10 +113,18 @@ theorem p_formula (n : ℕ) :
   rw [hsum, ← mul_assoc, inv4_spec, one_mul]
 
 theorem u_progression (t : ℕ) : u (112 + period * t) = u 112 := by
-  rw [u_closed, u_closed, pow_add, pow_mul, alpha_period, one_pow, mul_one]
+  calc
+    u (112 + period * t) = u 0 * alpha ^ (112 + period * t) := u_closed _
+    _ = u 0 * alpha ^ 112 := by
+      rw [pow_add, pow_mul, alpha_period, one_pow, mul_one]
+    _ = u 112 := (u_closed 112).symm
 
 theorem v_progression (t : ℕ) : v (112 + period * t) = v 112 := by
-  rw [v_closed, v_closed, pow_add, pow_mul, beta_period, one_pow, mul_one]
+  calc
+    v (112 + period * t) = v 0 * beta ^ (112 + period * t) := v_closed _
+    _ = v 0 * beta ^ 112 := by
+      rw [pow_add, pow_mul, beta_period, one_pow, mul_one]
+    _ = v 112 := (v_closed 112).symm
 
 theorem p_cast_progression (t : ℕ) :
     (p (112 + period * t) : R) = (p 112 : R) := by
@@ -140,7 +144,7 @@ theorem modulus_dvd_progression (t : ℕ) :
 
 /-- The `p`-coordinate strictly increases at every natural step. -/
 theorem p_lt_succ (n : ℕ) : p n < p (n + 1) := by
-  simp only [p, q, pell, step, Prod.fst, Prod.snd]
+  simp only [p, pell, step]
   omega
 
 theorem p_monotone : Monotone p :=
