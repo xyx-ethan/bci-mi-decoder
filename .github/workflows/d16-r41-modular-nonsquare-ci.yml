@@ -29,7 +29,7 @@ jobs:
           set -euxo pipefail
           cd fc
           mkdir -p FormalConjectures/Research
-          base=https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/bc255f3db052e6803cc535895ffee759c2c226b8/research
+          base=https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/f9208b108bfc558a993e3d4fef933f5b4e030af6/research
           curl -fsSL "$base/D16R39DiscriminantBridge.lean" -o FormalConjectures/Research/D16R39DiscriminantBridge.lean
           curl -fsSL "$base/D16R40SourceToQuadratic.lean" -o FormalConjectures/Research/D16R40SourceToQuadratic.lean
           curl -fsSL "$base/D16R41ModularNonsquare.lean" -o FormalConjectures/Research/D16R41ModularNonsquare.lean
