@@ -39,8 +39,7 @@ theorem unitary_coprime_mul_iff {m n a b : ℕ}
         rw [Nat.mul_div_cancel' ha, Nat.mul_div_cancel' hb]
       _ = (a * b) * ((m / a) * (n / b)) := by ac_rfl
   have hcomp : (m * n) / (a * b) = (m / a) * (n / b) := by
-    rw [hprod]
-    exact Nat.mul_div_left _ habpos
+    rw [hprod, mul_comm (a * b) ((m / a) * (n / b)), Nat.mul_div_left _ habpos]
   rw [hcomp]
   constructor
   · intro h
@@ -123,32 +122,36 @@ theorem not_coprime_prime_pows {p i j : ℕ} (hp : p.Prime)
 theorem usigma_prime_pow_three {p : ℕ} (hp : p.Prime) :
     usigma (p ^ 3) = 1 + p ^ 3 := by
   have h31 : p ^ 3 / p = p ^ 2 := by
-    rw [show p ^ 3 = p * p ^ 2 by ring, Nat.mul_div_left _ hp.pos]
+    rw [show p ^ 3 = p ^ 2 * p by ring, Nat.mul_div_left _ hp.pos]
   have h32 : p ^ 3 / p ^ 2 = p := by
-    rw [show p ^ 3 = p ^ 2 * p by ring, Nat.mul_div_left _ (pow_pos hp.pos 2)]
-  have hc21 : ¬ (p ^ 2).Coprime p := not_coprime_prime_pows hp (by decide) (by decide)
-  have hc12 : ¬ p.Coprime (p ^ 2) := not_coprime_prime_pows hp (by decide) (by decide)
+    rw [show p ^ 3 = p * p ^ 2 by ring, Nat.mul_div_left _ (pow_pos hp.pos 2)]
+  have hc21 : ¬ (p ^ 2).Coprime p :=
+    not_coprime_prime_pows (p := p) (i := 2) (j := 1) hp (by decide) (by decide)
+  have hc12 : ¬ p.Coprime (p ^ 2) :=
+    not_coprime_prime_pows (p := p) (i := 1) (j := 2) hp (by decide) (by decide)
   simp [usigma, unitaryDivisors, Nat.divisors_prime_pow hp, Finset.range_add_one,
     h31, h32, hc21, hc12, hp.ne_zero]
 
 theorem usigma_prime_pow_four {p : ℕ} (hp : p.Prime) :
     usigma (p ^ 4) = 1 + p ^ 4 := by
   have h41 : p ^ 4 / p = p ^ 3 := by
-    rw [show p ^ 4 = p * p ^ 3 by ring, Nat.mul_div_left _ hp.pos]
+    rw [show p ^ 4 = p ^ 3 * p by ring, Nat.mul_div_left _ hp.pos]
   have h42 : p ^ 4 / p ^ 2 = p ^ 2 := by
     rw [show p ^ 4 = p ^ 2 * p ^ 2 by ring, Nat.mul_div_left _ (pow_pos hp.pos 2)]
   have h43 : p ^ 4 / p ^ 3 = p := by
-    rw [show p ^ 4 = p ^ 3 * p by ring, Nat.mul_div_left _ (pow_pos hp.pos 3)]
-  have hc31 : ¬ (p ^ 3).Coprime p := not_coprime_prime_pows hp (by decide) (by decide)
-  have hc22 : ¬ (p ^ 2).Coprime (p ^ 2) := not_coprime_prime_pows hp (by decide) (by decide)
-  have hc13 : ¬ p.Coprime (p ^ 3) := not_coprime_prime_pows hp (by decide) (by decide)
+    rw [show p ^ 4 = p * p ^ 3 by ring, Nat.mul_div_left _ (pow_pos hp.pos 3)]
+  have hc31 : ¬ (p ^ 3).Coprime p :=
+    not_coprime_prime_pows (p := p) (i := 3) (j := 1) hp (by decide) (by decide)
+  have hc22 : ¬ (p ^ 2).Coprime (p ^ 2) :=
+    not_coprime_prime_pows (p := p) (i := 2) (j := 2) hp (by decide) (by decide)
+  have hc13 : ¬ p.Coprime (p ^ 3) :=
+    not_coprime_prime_pows (p := p) (i := 1) (j := 3) hp (by decide) (by decide)
   simp [usigma, unitaryDivisors, Nat.divisors_prime_pow hp, Finset.range_add_one,
     h41, h42, h43, hc31, hc22, hc13, hp.ne_zero]
 
 theorem usigma_two_pow_seventeen :
     usigma (2 ^ 17) = 1 + 2 ^ 17 := by
-  rw [usigma, unitaryDivisors, Nat.divisors_prime_pow Nat.prime_two]
-  norm_num [Finset.range_add_one, Nat.Coprime]
+  decide
 
 theorem sigma_prime_pow_three {p : ℕ} (hp : p.Prime) :
     ArithmeticFunction.sigma 1 (p ^ 3) = (p + 1) * (p^2 + 1) := by
