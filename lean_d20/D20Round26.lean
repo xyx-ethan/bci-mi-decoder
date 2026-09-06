@@ -64,6 +64,36 @@ theorem unique_triple_cell
       pairCellSize f 6 = 3 ∨ pairCellSize f 7 = 3 ∨
       pairCellSize f 8 = 3 ∨ pairCellSize f 9 = 3 ∨
       pairCellSize f 10 = 3 := by
+    by_cases h0' : pairCellSize f 0 = 3
+    · exact Or.inl h0'
+    right
+    by_cases h1' : pairCellSize f 1 = 3
+    · exact Or.inl h1'
+    right
+    by_cases h2' : pairCellSize f 2 = 3
+    · exact Or.inl h2'
+    right
+    by_cases h3' : pairCellSize f 3 = 3
+    · exact Or.inl h3'
+    right
+    by_cases h4' : pairCellSize f 4 = 3
+    · exact Or.inl h4'
+    right
+    by_cases h5' : pairCellSize f 5 = 3
+    · exact Or.inl h5'
+    right
+    by_cases h6' : pairCellSize f 6 = 3
+    · exact Or.inl h6'
+    right
+    by_cases h7' : pairCellSize f 7 = 3
+    · exact Or.inl h7'
+    right
+    by_cases h8' : pairCellSize f 8 = 3
+    · exact Or.inl h8'
+    right
+    by_cases h9' : pairCellSize f 9 = 3
+    · exact Or.inl h9'
+    right
     omega
   rcases hex with h | h | h | h | h | h | h | h | h | h | h
   · refine ⟨0, ⟨h, ?_⟩, ?_⟩
