@@ -1,6 +1,6 @@
-name = "d17_round30_survivor_gaps"
+name = "d17_round31_modular_soundness"
 version = "0.1.0"
-defaultTargets = ["D17FiniteY", "D17RatioBridge", "D17A125FiniteY", "D17Round29FiniteBox", "D17Round30SurvivorGaps"]
+defaultTargets = ["D17FiniteY", "D17RatioBridge", "D17A125FiniteY", "D17Round29FiniteBox", "D17Round30SurvivorGaps", "D17Round31ModularSoundness"]
 
 [[require]]
 name = "formal_conjectures"
@@ -21,3 +21,6 @@ name = "D17Round29FiniteBox"
 
 [[lean_lib]]
 name = "D17Round30SurvivorGaps"
+
+[[lean_lib]]
+name = "D17Round31ModularSoundness"
