@@ -29,8 +29,8 @@ jobs:
         run: |
           set -euo pipefail
           python3 verify_python.py | tee python_check.log
-          g++ -O3 -std=c++17 verify_cpp.cpp -o verify_cpp
-          ./verify_cpp | tee cpp_check.log
+          javac VerifyCritical.java
+          java VerifyCritical | tee java_check.log
 
       - name: Install verified Lean 4.33.1
         shell: bash
@@ -101,9 +101,9 @@ jobs:
           set -euo pipefail
           mkdir -p evidence
           cp D13CriticalFermat.lean AxiomAudit.lean certificate.json \
-             generation.log python_check.log cpp_check.log \
+             generation.log python_check.log java_check.log \
              lake_wfail_build.log axiom_audit.log \
-             generate.py verify_python.py verify_cpp.cpp \
+             generate.py verify_python.py VerifyCritical.java \
              lakefile.toml lean-toolchain evidence/
           (cd evidence && sha256sum * > SHA256SUMS)
           cat evidence/SHA256SUMS
