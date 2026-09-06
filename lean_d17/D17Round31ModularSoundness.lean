@@ -28,28 +28,28 @@ set_option maxHeartbeats 0
 def discZ (m p q : ℕ) : ZMod m :=
   (discriminant p q : ZMod m)
 
-/-- The discriminant is a square modulo `m`. -/
-def IsSquareMod (m : ℕ) [NeZero m] (p q : ℕ) : Prop :=
-  ∃ x : ZMod m, discZ m p q = x ^ 2
-
-/-- Executable modular non-square filter. -/
+/-- Executable modular non-square filter.  The finite universal quantifier is
+spelled out explicitly, so no noncomputable existential decision procedure is
+used. -/
 def killedBy (m : ℕ) [NeZero m] (p q : ℕ) : Bool :=
-  decide (¬ IsSquareMod m p q)
+  (Finset.univ : Finset (ZMod m)).all fun x =>
+    decide (discZ m p q ≠ x ^ 2)
 
 theorem killedBy_iff (m : ℕ) [NeZero m] (p q : ℕ) :
-    killedBy m p q = true ↔ ¬ IsSquareMod m p q := by
+    killedBy m p q = true ↔
+      ∀ x : ZMod m, discZ m p q ≠ x ^ 2 := by
   simp [killedBy]
 
 /-- A modular non-square certificate rules out an integer square. -/
 theorem killedBy_not_int_square {m p q : ℕ} [NeZero m]
     (hkill : killedBy m p q = true) :
     ¬ IsIntSquare (discriminant p q) := by
-  have hmod : ¬ IsSquareMod m p q :=
+  have hmod : ∀ x : ZMod m, discZ m p q ≠ x ^ 2 :=
     (killedBy_iff m p q).mp hkill
   rintro ⟨s, hs⟩
-  apply hmod
-  refine ⟨(s : ZMod m), ?_⟩
-  exact_mod_cast hs
+  apply hmod (s : ZMod m)
+  have hcast := congrArg (fun z : ℤ => (z : ZMod m)) hs
+  simpa [discZ] using hcast
 
 /-- Direct bridge from any successful modular filter to nonexistence of an
 A063880 term in the `(14;17,9,3)` branch. -/
