@@ -1,12 +1,15 @@
-/-
-D14 Round 11: explicit odd witness for OeisA51903.conjecture3.
-No declaration below uses the open conjecture itself.
--/
 import Mathlib
 import FormalConjectures.OEIS.«51903»
 
-set_option maxRecDepth 10000
+/-!
+# D14 Round 11: explicit witness for `OeisA51903.conjecture3`
+
+This file proves the existential mathematical content directly. It does not use the open conjecture.
+-/
+
+set_option maxRecDepth 1000000
 set_option maxHeartbeats 0
+set_option exponentiation.threshold 20000
 
 namespace D14Round11
 open OeisA51903
@@ -28,10 +31,7 @@ theorem factorList_N :
     N.primeFactorsList = [7,31,73,79,89,271,937,3511,3511] := by
   apply primeFactorsList_from_certificate
   · norm_num [N, List.prod_cons, List.prod_nil]
-  · intro p hp
-    simp only [List.mem_cons, List.mem_singleton] at hp
-    rcases hp with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
-    all_goals norm_num
+  · norm_num
   · decide
 
 theorem a_N : a N = 2 := by
