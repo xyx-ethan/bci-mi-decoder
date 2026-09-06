@@ -93,10 +93,10 @@ theorem ratio_product_lt_cube {x y z : ℚ}
   have h3zp : 0 ≤ R3 z := le_of_lt (R3_pos hz)
   have hUp : 0 ≤ U y := le_of_lt (U_pos hy)
   have h12 : R4 x * R3 y < U y * U y := by
-    exact mul_lt_mul h4 h3y h3yp hUp
+    exact mul_lt_mul h4 (le_of_lt h3y) h3yp hUp
   have hUU : 0 ≤ U y * U y := mul_nonneg hUp hUp
   have h123 : (R4 x * R3 y) * R3 z < (U y * U y) * U y := by
-    exact mul_lt_mul h12 h3z h3zp hUU
+    exact mul_lt_mul h12 (le_of_lt h3z) h3zp hUU
   calc
     Target = (R4 x * R3 y) * R3 z := by simpa [mul_assoc] using hEq.symm
     _ < (U y * U y) * U y := h123
@@ -114,7 +114,7 @@ theorem finite_y_bound {x y z : ℚ}
   have hcy : (262145 : ℚ) ≤ y := le_of_not_gt hnot
   have hU : U y ≤ U (262145 : ℚ) := U_antitone (by norm_num) hcy
   have hcube : U y ^ 3 ≤ U (262145 : ℚ) ^ 3 := by
-    gcongr
+    exact pow_le_pow_left₀ (le_of_lt (U_pos hy)) hU
   have hb := boundary_cube
   linarith
 
