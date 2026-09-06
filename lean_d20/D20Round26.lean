@@ -26,7 +26,7 @@ theorem sum_tripleDegree
   simp_rw [hrow]
   norm_num
 
-/-- Fifteen triples on 23 light words always admit a word lying in at most one triple. -/
+/-- Among fifteen triples on 23 light words, some word lies in at most one triple. -/
 theorem exists_tripleDegree_le_one
     (I : Fin 15 → Fin 23 → ℕ)
     (hrow : ∀ p : Fin 15, ∑ x : Fin 23, I p x = 3) :
