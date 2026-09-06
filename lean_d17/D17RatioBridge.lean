@@ -25,6 +25,6 @@ theorem usigma_prime_pow_four {p : ℕ} (hp : p.Prime) :
 
 theorem usigma_two_pow_seventeen :
     usigma (2 ^ 17) = 1 + 2 ^ 17 := by
-  simpa using usigma_prime_pow_three (p := 2) Nat.prime_two
+  simp [usigma, unitaryDivisors, Nat.divisors_prime_pow Nat.prime_two, Finset.range_succ]
 
 end D17Round24
