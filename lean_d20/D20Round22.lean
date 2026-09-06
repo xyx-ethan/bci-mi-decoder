@@ -31,10 +31,13 @@ theorem ame8_6_minSupport_unique_completion
     apply funext
     intro i
     have hcoord := congrArg
-      (fun q : {y : Config 8 6 // ψ y ≠ 0} => q.1 (leftIndex (by omega) i)) huv
+      (fun q : {y : Config 8 6 // ψ y ≠ 0} =>
+        q.1 (leftIndex (m := 4) (n := 8) (by omega) i)) huv
     simpa [f] using hcoord
   have hcard_dom : Fintype.card (Config 4 6) = 1296 := by
-    simp [card_config]
+    calc
+      Fintype.card (Config 4 6) = 6 ^ 4 := card_config 4 6
+      _ = 1296 := by norm_num
   have hcard_cod : Fintype.card {y : Config 8 6 // ψ y ≠ 0} = 1296 := by
     simpa [supportCount] using hcount
   have hbij : Function.Bijective f :=
@@ -48,7 +51,8 @@ theorem ame8_6_minSupport_unique_completion
     apply funext
     intro i
     have hcoord := congrArg
-      (fun q : {y : Config 8 6 // ψ y ≠ 0} => q.1 (leftIndex (by omega) i)) hu
+      (fun q : {y : Config 8 6 // ψ y ≠ 0} =>
+        q.1 (leftIndex (m := 4) (n := 8) (by omega) i)) hu
     simpa [f, yw] using hcoord
   subst u
   have hfull :
@@ -57,7 +61,8 @@ theorem ame8_6_minSupport_unique_completion
     exact congrArg Subtype.val hu
   apply funext
   intro i
-  have hcoord := congrArg (fun q : Config 8 6 => q (rightIndex (by omega) i)) hfull
+  have hcoord := congrArg
+    (fun q : Config 8 6 => q (rightIndex (m := 4) (n := 8) (by omega) i)) hfull
   simpa using hcoord
 
 end D20Round22
