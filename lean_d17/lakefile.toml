@@ -1,6 +1,6 @@
-name = "d17_round29_finite_box"
+name = "d17_round30_survivor_gaps"
 version = "0.1.0"
-defaultTargets = ["D17FiniteY", "D17RatioBridge", "D17A125FiniteY", "D17Round29FiniteBox"]
+defaultTargets = ["D17FiniteY", "D17RatioBridge", "D17A125FiniteY", "D17Round29FiniteBox", "D17Round30SurvivorGaps"]
 
 [[require]]
 name = "formal_conjectures"
@@ -18,3 +18,6 @@ name = "D17A125FiniteY"
 
 [[lean_lib]]
 name = "D17Round29FiniteBox"
+
+[[lean_lib]]
+name = "D17Round30SurvivorGaps"
