@@ -85,7 +85,7 @@ theorem noSquareTwoModThree : NoSquareMod 3 2 := by
 /-- A bad fourth lift cannot have square normalized quotient. -/
 theorem badFourthLift_normalized_noIntegerSquare
     {q r m d u t : ℤ}
-    (hu : liftGateExpression q r m d = 27 * u)
+    (_hu : liftGateExpression q r m d = 27 * u)
     (hk : fourthNormalized q r u = 3 * t + 2) :
     ¬ ∃ w : ℤ, w ^ 2 = fourthNormalized q r u := by
   rintro ⟨w, hw⟩
