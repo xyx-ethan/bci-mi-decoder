@@ -84,6 +84,8 @@ noncomputable def pivotStarContract {K : Type} [Field K]
 
 /-- Exact fixed-size contraction identity.  Under star support, higher correction
 terms in the six-vertex matching expansion vanish identically. -/
+set_option maxHeartbeats 5000000 in
+set_option maxRecDepth 100000 in
 theorem pmSumN_pivotStarContract
     {K : Type} [Field K]
     (W : WeightsN 8 3 K)
