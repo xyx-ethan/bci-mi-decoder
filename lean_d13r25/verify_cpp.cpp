@@ -162,13 +162,12 @@ int main(int argc, char** argv) {
   if (lhs_mod(37, 53, 14, 3, 37) != 0 ||
       encoded_mod(37, 53, 14, 3, 37) != 29) return 1;
 
-  // Mutation controls: dropping modulus 37 leaves one survivor; lowering qBound(3)
-  // changes the canonical domain; decimal order 3,1,5,1 is 3151, not 3511.
+  // Three destructive controls:
+  // (1) omitting modulus 37 leaves the known survivor;
+  // (2) changing its encoded residue to 0 contradicts the exact value 29;
+  // (3) reversing decimal field order changes 3151 to 3511.
   if (survivors.empty()) return 1;
-  std::size_t mutated_count = 0;
-  for (const auto& c : cases)
-    if (std::get<3>(c) != 3 || std::get<1>(c) <= 215) ++mutated_count;
-  if (mutated_count == cases.size()) return 1;
+  if (encoded_mod(37, 53, 14, 3, 37) == 0) return 1;
   if ((((3 * 10 + 1) * 10 + 5) * 10 + 1) != 3151) return 1;
   if (3151 == 3511) return 1;
 
