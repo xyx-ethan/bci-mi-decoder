@@ -63,6 +63,6 @@ theorem ame8_6_minSupport_unique_completion
   intro i
   have hcoord := congrArg
     (fun q : Config 8 6 => q (rightIndex (m := 4) (n := 8) (by omega) i)) hfull
-  simpa using hcoord
+  simpa using hcoord.symm
 
 end D20Round22
