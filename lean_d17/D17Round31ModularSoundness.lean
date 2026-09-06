@@ -32,7 +32,7 @@ def discZ (m p q : ℕ) : ZMod m :=
 spelled out explicitly, so no noncomputable existential decision procedure is
 used. -/
 def killedBy (m : ℕ) [NeZero m] (p q : ℕ) : Bool :=
-  (Finset.univ : Finset (ZMod m)).all fun x =>
+  (Finset.univ : Finset (ZMod m)).toList.all fun x =>
     decide (discZ m p q ≠ x ^ 2)
 
 theorem killedBy_iff (m : ℕ) [NeZero m] (p q : ℕ) :
