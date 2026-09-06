@@ -57,7 +57,7 @@ theorem descendedCore_cast_three
     (descendedCore q r m d t : ZMod 3) =
       (secondGateExpression q t : ZMod 3) := by
   rw [descendedCore_eq_secondGate_add_three_mul hgate]
-  norm_num
+  simp
 
 /-- Under the first-gate quotient, squarehood descends exactly by a factor 9. -/
 theorem square_discriminant_iff_descendedCore_square
