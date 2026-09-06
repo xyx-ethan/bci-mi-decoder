@@ -1,0 +1,72 @@
+name: D17 Round23 min-order repair kernel audit
+
+on:
+  push:
+    branches:
+      - d17-round23-min-order-repair-20260905
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  strict-lean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Exact semantic and arithmetic checks
+        working-directory: lean_d17
+        run: |
+          python3 verify_semantics.py
+          python3 verify_finite_y.py
+          python3 verify_order_scope.py
+          g++ -std=c++17 -O2 verify_finite_y.cpp -o /tmp/verify_finite_y
+          /tmp/verify_finite_y
+
+      - name: Install pinned Lean
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain leanprover/lean4:v4.33.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Verify toolchain
+        run: |
+          lean --version
+          lake --version
+
+      - name: Resolve pinned dependencies
+        working-directory: lean_d17
+        run: |
+          lake update
+          lake exe cache get
+
+      - name: Exact strict build
+        working-directory: lean_d17
+        run: lake --wfail build
+
+      - name: Print and reject forbidden dependencies
+        working-directory: lean_d17
+        run: |
+          set -o pipefail
+          lake env lean AxiomAudit.lean | tee dependency-audit.log
+          if grep -E 'sorryAx|native_decide\.ax|Lean\.ofReduceBool|Lean\.trustCompiler' dependency-audit.log; then
+            echo 'forbidden dependency detected'
+            exit 1
+          fi
+
+      - name: Reject forbidden source constructs
+        run: |
+          for f in lean_d17/D17FiniteY.lean lean_d17/AxiomAudit.lean; do
+            if grep -n -E '\b(sorry|admit|axiom|unsafe|native_decide)\b' "$f"; then
+              echo "forbidden Lean source token detected in $f"
+              exit 1
+            fi
+          done
+
+      - name: Record pinned revisions
+        working-directory: lean_d17
+        run: |
+          grep -A12 -B2 'formal_conjectures' lake-manifest.json || true
+          grep -A12 -B2 'mathlib' lake-manifest.json || true
