@@ -2,11 +2,16 @@ import Mathlib
 import FormalConjectures.OEIS.«63880»
 
 /-!
-# D17 Round 22: kernel bridge for the a=17 finite-y reduction
+# D17 Round 23: repair of the finite-y order scope
 
-This file formalizes the rational-inequality bridge used in the restricted
-A063880 branch `n = 2^17 * x^4 * y^3 * z^3` with `y ≤ x ≤ z`.
-It does not use either research-open theorem from the upstream file.
+Round 22 proved the finite-y bound under the chain `y ≤ x ≤ z`.  The actual
+remaining order branch inherited from the D17 search is `y ≤ z < x`.  The
+proof only needs that `y` is no larger than each of the other two bases.
+
+This file strengthens the bridge to assumptions `y ≤ x` and `y ≤ z`, proves
+the Round-22 chain theorem as a corollary, and proves the actual remaining
+order branch `y ≤ z < x` as another corollary.  It does not use either
+research-open theorem from the upstream A063880 file.
 -/
 
 namespace D17Round22
@@ -77,12 +82,12 @@ theorem U_antitone {a b : ℚ} (ha : 1 < a) (hab : a ≤ b) : U b ≤ U a := by
   rw [div_le_div_iff₀ hdenb hdena]
   nlinarith
 
-theorem ratio_product_lt_cube {x y z : ℚ}
-    (hy : 1 < y) (hyx : y ≤ x) (hxz : x ≤ z)
+/-- Strong order-free version: only `y` being a common lower bound is needed. -/
+theorem ratio_product_lt_cube_of_min {x y z : ℚ}
+    (hy : 1 < y) (hyx : y ≤ x) (hyz : y ≤ z)
     (hEq : R4 x * R3 y * R3 z = Target) :
     Target < U y ^ 3 := by
   have hx : 1 < x := lt_of_lt_of_le hy hyx
-  have hyz : y ≤ z := le_trans hyx hxz
   have hz : 1 < z := lt_of_lt_of_le hy hyz
   have hUx : U x ≤ U y := U_antitone hy hyx
   have hUz : U z ≤ U y := U_antitone hy hyz
@@ -100,14 +105,22 @@ theorem ratio_product_lt_cube {x y z : ℚ}
     _ < (U y * U y) * U y := h123
     _ = U y ^ 3 := by ring
 
+/-- Round-22 chain statement, now proved from the stronger common-minimum theorem. -/
+theorem ratio_product_lt_cube {x y z : ℚ}
+    (hy : 1 < y) (hyx : y ≤ x) (hxz : x ≤ z)
+    (hEq : R4 x * R3 y * R3 z = Target) :
+    Target < U y ^ 3 := by
+  exact ratio_product_lt_cube_of_min hy hyx (hyx.trans hxz) hEq
+
 theorem boundary_cube : U (262145 : ℚ) ^ 3 < Target := by
   norm_num [U, Target]
 
-theorem finite_y_bound {x y z : ℚ}
-    (hy : 1 < y) (hyx : y ≤ x) (hxz : x ≤ z)
+/-- Corrected finite-y theorem: no order between `x` and `z` is required. -/
+theorem finite_y_bound_of_min {x y z : ℚ}
+    (hy : 1 < y) (hyx : y ≤ x) (hyz : y ≤ z)
     (hEq : R4 x * R3 y * R3 z = Target) :
     y < 262145 := by
-  have hprod : Target < U y ^ 3 := ratio_product_lt_cube hy hyx hxz hEq
+  have hprod : Target < U y ^ 3 := ratio_product_lt_cube_of_min hy hyx hyz hEq
   by_contra hnot
   have hcy : (262145 : ℚ) ≤ y := le_of_not_gt hnot
   have hU : U y ≤ U (262145 : ℚ) := U_antitone (by norm_num) hcy
@@ -115,5 +128,20 @@ theorem finite_y_bound {x y z : ℚ}
     exact pow_le_pow_left₀ (le_of_lt (U_pos hy)) hU 3
   have hb := boundary_cube
   linarith
+
+/-- The Round-22 theorem is a direct corollary of the corrected theorem. -/
+theorem finite_y_bound {x y z : ℚ}
+    (hy : 1 < y) (hyx : y ≤ x) (hxz : x ≤ z)
+    (hEq : R4 x * R3 y * R3 z = Target) :
+    y < 262145 := by
+  exact finite_y_bound_of_min hy hyx (hyx.trans hxz) hEq
+
+/-- The actual inherited remaining order branch `y ≤ z < x` is covered. -/
+theorem finite_y_bound_remaining_order {x y z : ℚ}
+    (hy : 1 < y) (hyz : y ≤ z) (hzx : z < x)
+    (hEq : R4 x * R3 y * R3 z = Target) :
+    y < 262145 := by
+  have hyx : y ≤ x := hyz.trans hzx.le
+  exact finite_y_bound_of_min hy hyx hyz hEq
 
 end D17Round22
