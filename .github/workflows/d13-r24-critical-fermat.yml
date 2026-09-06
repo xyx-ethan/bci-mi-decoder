@@ -20,6 +20,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 generate.py | tee generation.log
+          python3 finalize_generated.py | tee finalize.log
           test -s D13CriticalFermat.lean
           test -s AxiomAudit.lean
           test -s certificate.json
@@ -101,9 +102,9 @@ jobs:
           set -euo pipefail
           mkdir -p evidence
           cp D13CriticalFermat.lean AxiomAudit.lean certificate.json \
-             generation.log python_check.log java_check.log \
+             generation.log finalize.log python_check.log java_check.log \
              lake_wfail_build.log axiom_audit.log \
-             generate.py verify_python.py VerifyCritical.java \
+             generate.py finalize_generated.py verify_python.py VerifyCritical.java \
              lakefile.toml lean-toolchain evidence/
           (cd evidence && sha256sum * > SHA256SUMS)
           cat evidence/SHA256SUMS
