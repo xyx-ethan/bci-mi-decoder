@@ -110,7 +110,7 @@ theorem usigma_mul_of_coprime {m n : ℕ} (hmn : m.Coprime n)
       ⟨(Finset.mem_filter.mp hb1).1, (Finset.mem_filter.mp hb2).1⟩
     exact hmn.mul_injOn_divisors (by simpa using haD) (by simpa using hbD) heq
 
-theorem unitaryDivisors_prime_pow {p k : ℕ} (hp : p.Prime) (hk : k ≠ 0) :
+theorem unitaryDivisors_prime_pow {p k : ℕ} (hp : p.Prime) :
     unitaryDivisors (p ^ k) = {1, p ^ k} := by
   ext d
   simp only [Finset.mem_insert, Finset.mem_singleton]
@@ -145,7 +145,7 @@ theorem unitaryDivisors_prime_pow {p k : ℕ} (hp : p.Prime) (hk : k ≠ 0) :
 theorem usigma_prime_pow {p k : ℕ} (hp : p.Prime) (hk : k ≠ 0) :
     usigma (p ^ k) = 1 + p ^ k := by
   have hpk1 : p ^ k ≠ 1 := (one_lt_pow₀ hp.one_lt hk).ne'
-  rw [usigma, unitaryDivisors_prime_pow hp hk]
+  rw [usigma, unitaryDivisors_prime_pow hp]
   rw [Finset.sum_insert]
   · simp
   · simpa [eq_comm] using hpk1
@@ -217,7 +217,6 @@ theorem sigma_branch {x y z : ℕ}
     ArithmeticFunction.isMultiplicative_sigma.map_mul_of_coprime c2x,
     sigma_two_pow_seventeen, sigma_prime_pow_four hx,
     sigma_prime_pow_three hy, sigma_prime_pow_three hz]
-  ring
 
 theorem usigma_branch {x y z : ℕ}
     (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
@@ -238,7 +237,6 @@ theorem usigma_branch {x y z : ℕ}
     usigma_two_pow_seventeen, usigma_prime_pow_four hx,
     usigma_prime_pow_three hy, usigma_prime_pow_three hz]
   norm_num
-  ring
 
 theorem A_branch_uncancelled {x y z : ℕ}
     (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
@@ -263,20 +261,48 @@ theorem A_branch_cross_rat {x y z : ℕ}
       (262146 : ℚ) * ((x : ℚ) ^ 4 + 1) * D17Round22.Phi6 (y : ℚ) *
         D17Round22.Phi6 (z : ℚ) := by
   have hnat := A_branch_uncancelled hx hy hz h2y hyz hzx hA
-  have hq := congrArg (fun t : ℕ => (t : ℚ)) hnat
-  push_cast at hq
-  have hcommon :
+  have hq :
+      (262143 : ℚ) * (Phi5N x : ℚ) * (((y : ℚ) + 1) * ((y : ℚ) ^ 2 + 1)) *
+          (((z : ℚ) + 1) * ((z : ℚ) ^ 2 + 1)) =
+        (262146 : ℚ) * (1 + (x : ℚ) ^ 4) * (1 + (y : ℚ) ^ 3) *
+          (1 + (z : ℚ) ^ 3) := by
+    exact_mod_cast hnat
+  have hxPhi : (Phi5N x : ℚ) = D17Round22.Phi5 (x : ℚ) := by
+    norm_num [Phi5N, D17Round22.Phi5]
+  rw [hxPhi] at hq
+  have hyFactor : (1 : ℚ) + (y : ℚ) ^ 3 =
+      ((y : ℚ) + 1) * D17Round22.Phi6 (y : ℚ) := by
+    simp [D17Round22.Phi6]
+    ring
+  have hzFactor : (1 : ℚ) + (z : ℚ) ^ 3 =
+      ((z : ℚ) + 1) * D17Round22.Phi6 (z : ℚ) := by
+    simp [D17Round22.Phi6]
+    ring
+  let c : ℚ := ((y : ℚ) + 1) * ((z : ℚ) + 1)
+  let lhs : ℚ := (262143 : ℚ) * D17Round22.Phi5 (x : ℚ) *
+    ((y : ℚ) ^ 2 + 1) * ((z : ℚ) ^ 2 + 1)
+  let rhs : ℚ := (262146 : ℚ) * ((x : ℚ) ^ 4 + 1) *
+    D17Round22.Phi6 (y : ℚ) * D17Round22.Phi6 (z : ℚ)
+  have hcommon : c * lhs = c * rhs := by
+    dsimp [c, lhs, rhs]
+    calc
       (((y : ℚ) + 1) * ((z : ℚ) + 1)) *
           ((262143 : ℚ) * D17Round22.Phi5 (x : ℚ) * ((y : ℚ) ^ 2 + 1) *
             ((z : ℚ) ^ 2 + 1)) =
-        (((y : ℚ) + 1) * ((z : ℚ) + 1)) *
+          (262143 : ℚ) * D17Round22.Phi5 (x : ℚ) *
+            (((y : ℚ) + 1) * ((y : ℚ) ^ 2 + 1)) *
+            (((z : ℚ) + 1) * ((z : ℚ) ^ 2 + 1)) := by ring
+      _ = (262146 : ℚ) * (1 + (x : ℚ) ^ 4) * (1 + (y : ℚ) ^ 3) *
+            (1 + (z : ℚ) ^ 3) := hq
+      _ = (((y : ℚ) + 1) * ((z : ℚ) + 1)) *
           ((262146 : ℚ) * ((x : ℚ) ^ 4 + 1) * D17Round22.Phi6 (y : ℚ) *
             D17Round22.Phi6 (z : ℚ)) := by
-    simp [Phi5N, D17Round22.Phi5, D17Round22.Phi6] at hq ⊢
-    ring_nf at hq ⊢
-    exact hq
-  have hcommon_ne : ((y : ℚ) + 1) * ((z : ℚ) + 1) ≠ 0 := by positivity
-  exact mul_left_cancel₀ hcommon_ne hcommon
+        rw [hyFactor, hzFactor]
+        ring
+  have hc0 : c ≠ 0 := by
+    dsimp [c]
+    positivity
+  exact mul_left_cancel₀ hc0 hcommon
 
 theorem A_branch_ratio {x y z : ℕ}
     (hx : x.Prime) (hy : y.Prime) (hz : z.Prime)
@@ -290,7 +316,7 @@ theorem A_branch_ratio {x y z : ℕ}
   have hdx : (x : ℚ) ^ 4 + 1 ≠ 0 := by positivity
   have hdy : D17Round22.Phi6 (y : ℚ) ≠ 0 := (D17Round22.phi6_pos hyQ).ne'
   have hdz : D17Round22.Phi6 (z : ℚ) ≠ 0 := (D17Round22.phi6_pos hzQ).ne'
-  rw [D17Round22.R4, D17Round22.R3, D17Round22.Target]
+  simp only [D17Round22.R4, D17Round22.R3, D17Round22.Target]
   field_simp [hdx, hdy, hdz]
   ring_nf at hcross ⊢
   exact hcross
