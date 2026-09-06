@@ -31,7 +31,7 @@ jobs:
           mkdir -p FormalConjectures/Research
           curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/440b93ffd3c8a764ce1a63def36f49173340de34/research/D16R34P112.lean \
             -o FormalConjectures/Research/D16R34P112.lean
-          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/a23293e930e7443df2c93201350c2baf6101282f/research/D16R37Period21277.lean \
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/c8f325bf731626ac450f38421d861c8d1663f8ce/research/D16R37Period21277.lean \
             -o FormalConjectures/Research/D16R37Period21277.lean
           sha256sum \
             FormalConjectures/Research/D16R34P112.lean \
