@@ -350,7 +350,6 @@ theorem p_lower_raw_of_ratio {p q r : ℚ}
   have hden : (0 : ℚ) < 32767 := by norm_num
   rw [show Target = (32770 : ℚ) / 32767 by rfl] at hlo
   rw [div_lt_div_iff₀ hp0 hden] at hlo
-  norm_num at hlo ⊢
   linarith
 
 theorem prime_gap_10937 {p : ℕ} (hp : p.Prime) (hlo : 10922 < p) :
