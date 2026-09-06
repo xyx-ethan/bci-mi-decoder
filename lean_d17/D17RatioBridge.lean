@@ -4,9 +4,9 @@ import D17FiniteY
 # D17 Round 24: bridge from the A063880 arithmetic equation to the ratio equation
 
 The target branch is `n = 2^17 * x^4 * y^3 * z^3` with distinct odd prime
-bases `x,y,z`.  This file first establishes the fixed prime-power closed
-forms for ordinary and unitary divisor sums, then builds the multiplicative
-bridge.
+bases `x,y,z`.  This file first establishes symbolic prime-power and
+coprime-product formulas for ordinary and unitary divisor sums, then builds
+the arithmetic bridge.
 -/
 
 namespace D17Round24
@@ -110,48 +110,52 @@ theorem usigma_mul_of_coprime {m n : ℕ} (hmn : m.Coprime n)
       ⟨(Finset.mem_filter.mp hb1).1, (Finset.mem_filter.mp hb2).1⟩
     exact hmn.mul_injOn_divisors (by simpa using haD) (by simpa using hbD) heq
 
-theorem not_coprime_prime_pows {p i j : ℕ} (hp : p.Prime)
-    (hi : i ≠ 0) (hj : j ≠ 0) : ¬ (p ^ i).Coprime (p ^ j) := by
-  intro h
-  have hpi : p ∣ p ^ i := dvd_pow_self p hi
-  have hpj : p ∣ p ^ j := dvd_pow_self p hj
-  have hpp : p.Coprime p := (h.coprime_dvd_left hpi).coprime_dvd_right hpj
-  have hp1 : p = 1 := by simpa [Nat.Coprime] using hpp
-  exact hp.ne_one hp1
+theorem unitaryDivisors_prime_pow {p k : ℕ} (hp : p.Prime) (hk : k ≠ 0) :
+    unitaryDivisors (p ^ k) = {1, p ^ k} := by
+  ext d
+  simp only [Finset.mem_insert, Finset.mem_singleton]
+  constructor
+  · intro hd
+    rcases Finset.mem_filter.mp hd with ⟨hdDiv, hdCop⟩
+    have hdvd : d ∣ p ^ k := (Nat.mem_divisors.mp hdDiv).1
+    obtain ⟨i, hik, rfl⟩ := (Nat.dvd_prime_pow hp).1 hdvd
+    by_cases hi0 : i = 0
+    · left
+      simp [hi0]
+    by_cases hikEq : i = k
+    · right
+      simp [hikEq]
+    exfalso
+    have hi_lt : i < k := lt_of_le_of_ne hik hikEq
+    have hpi : p ∣ p ^ i := dvd_pow_self p hi0
+    have hpik : p ^ i ∣ p ^ k := pow_dvd_pow p hik
+    have hpq : p ∣ p ^ k / p ^ i := by
+      apply (Nat.dvd_div_iff_mul_dvd hpik).2
+      rw [← pow_succ]
+      exact pow_dvd_pow p (Nat.succ_le_of_lt hi_lt)
+    have hpp : p.Coprime p := (hdCop.coprime_dvd_left hpi).coprime_dvd_right hpq
+    have hp1 : p = 1 := by simpa [Nat.Coprime] using hpp
+    exact hp.ne_one hp1
+  · rintro (rfl | rfl)
+    · simp [unitaryDivisors, hp.ne_zero]
+    · simp [unitaryDivisors, hp.ne_zero]
+
+theorem usigma_prime_pow {p k : ℕ} (hp : p.Prime) (hk : k ≠ 0) :
+    usigma (p ^ k) = 1 + p ^ k := by
+  rw [usigma, unitaryDivisors_prime_pow hp hk]
+  simp [hp.ne_one, hk]
 
 theorem usigma_prime_pow_three {p : ℕ} (hp : p.Prime) :
     usigma (p ^ 3) = 1 + p ^ 3 := by
-  have h31 : p ^ 3 / p = p ^ 2 := by
-    rw [show p ^ 3 = p ^ 2 * p by ring, Nat.mul_div_left _ hp.pos]
-  have h32 : p ^ 3 / p ^ 2 = p := by
-    rw [show p ^ 3 = p * p ^ 2 by ring, Nat.mul_div_left _ (pow_pos hp.pos 2)]
-  have hc21 : ¬ (p ^ 2).Coprime p :=
-    not_coprime_prime_pows (p := p) (i := 2) (j := 1) hp (by decide) (by decide)
-  have hc12 : ¬ p.Coprime (p ^ 2) :=
-    not_coprime_prime_pows (p := p) (i := 1) (j := 2) hp (by decide) (by decide)
-  simp [usigma, unitaryDivisors, Nat.divisors_prime_pow hp, Finset.range_add_one,
-    h31, h32, hc21, hc12, hp.ne_zero]
+  exact usigma_prime_pow hp (by decide)
 
 theorem usigma_prime_pow_four {p : ℕ} (hp : p.Prime) :
     usigma (p ^ 4) = 1 + p ^ 4 := by
-  have h41 : p ^ 4 / p = p ^ 3 := by
-    rw [show p ^ 4 = p ^ 3 * p by ring, Nat.mul_div_left _ hp.pos]
-  have h42 : p ^ 4 / p ^ 2 = p ^ 2 := by
-    rw [show p ^ 4 = p ^ 2 * p ^ 2 by ring, Nat.mul_div_left _ (pow_pos hp.pos 2)]
-  have h43 : p ^ 4 / p ^ 3 = p := by
-    rw [show p ^ 4 = p * p ^ 3 by ring, Nat.mul_div_left _ (pow_pos hp.pos 3)]
-  have hc31 : ¬ (p ^ 3).Coprime p :=
-    not_coprime_prime_pows (p := p) (i := 3) (j := 1) hp (by decide) (by decide)
-  have hc22 : ¬ (p ^ 2).Coprime (p ^ 2) :=
-    not_coprime_prime_pows (p := p) (i := 2) (j := 2) hp (by decide) (by decide)
-  have hc13 : ¬ p.Coprime (p ^ 3) :=
-    not_coprime_prime_pows (p := p) (i := 1) (j := 3) hp (by decide) (by decide)
-  simp [usigma, unitaryDivisors, Nat.divisors_prime_pow hp, Finset.range_add_one,
-    h41, h42, h43, hc31, hc22, hc13, hp.ne_zero]
+  exact usigma_prime_pow hp (by decide)
 
 theorem usigma_two_pow_seventeen :
     usigma (2 ^ 17) = 1 + 2 ^ 17 := by
-  decide
+  exact usigma_prime_pow Nat.prime_two (by decide)
 
 theorem sigma_prime_pow_three {p : ℕ} (hp : p.Prime) :
     ArithmeticFunction.sigma 1 (p ^ 3) = (p + 1) * (p^2 + 1) := by
