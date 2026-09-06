@@ -232,7 +232,8 @@ theorem base120_zero : ((D16R34P112.pell 120).1 : R) = 0 := by
   change (orbit 120).1 = 2 * ((D16R34P112.pell 120).1 : R) + 1 at hEq
   have h2 : (2 : R) * ((D16R34P112.pell 120).1 : R) = 0 := by
     linear_combination hX - hEq
-  exact (mul_eq_zero.mp h2).resolve_left two_ne_zero
+  apply mul_left_cancel₀ (a := (2 : R)) two_ne_zero
+  simpa using h2
 
 /-- The second base p-coordinate is zero modulo the divisor. -/
 theorem base5198_zero : ((D16R34P112.pell 5198).1 : R) = 0 := by
@@ -244,7 +245,8 @@ theorem base5198_zero : ((D16R34P112.pell 5198).1 : R) = 0 := by
   change (orbit 5198).1 = 2 * ((D16R34P112.pell 5198).1 : R) + 1 at hEq
   have h2 : (2 : R) * ((D16R34P112.pell 5198).1 : R) = 0 := by
     linear_combination hX - hEq
-  exact (mul_eq_zero.mp h2).resolve_left two_ne_zero
+  apply mul_left_cancel₀ (a := (2 : R)) two_ne_zero
+  simpa using h2
 
 /-- Every index in the first progression is divisible by `modulus`. -/
 theorem progression120_dvd (t : ℕ) :
