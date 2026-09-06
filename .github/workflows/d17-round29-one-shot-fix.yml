@@ -1,0 +1,27 @@
+name: D17 Round29 one-shot source fix
+
+on:
+  push:
+    branches:
+      - d17-round29-finite-box-kernel-20260906
+    paths:
+      - .github/workflows/d17-round29-one-shot-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix-source:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Remove unused tactic that is rejected by --wfail
+        run: |
+          sed -i '/^[[:space:]]*norm_num at hlo ⊢$/d' lean_d17/D17Round29FiniteBox.lean
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add lean_d17/D17Round29FiniteBox.lean
+          git diff --cached --exit-code && exit 1 || true
+          git commit -m "D17 round29: remove unused tactic warning"
+          git push
