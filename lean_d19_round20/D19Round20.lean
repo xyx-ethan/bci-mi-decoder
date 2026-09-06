@@ -181,4 +181,49 @@ theorem pmSumN_pivotStarContract
   field_simp [hs]
   ring
 
+/-- A pivot-colour extension is constant exactly when both pivot colours equal
+the first residual colour and the residual colouring itself is constant. -/
+theorem allEqual_extendColor_iff
+    (a b : Fin 3) (ι : Fin 6 → Fin 3) :
+    allEqual (extendColor a b ι) ↔
+      a = ι 0 ∧ b = ι 0 ∧ allEqual ι := by
+  simp [allEqual, allEqualList, vertices, extendColor]
+
+/-- Summing the target indicator over all nine pivot-colour extensions preserves
+the six-vertex target indicator. -/
+theorem sum_extendColor_indicator
+    {K : Type} [Semiring K] (ι : Fin 6 → Fin 3) :
+    (∑ a : Fin 3, ∑ b : Fin 3,
+      if allEqual (extendColor a b ι) then (1 : K) else 0) =
+      (if allEqual ι then (1 : K) else 0) := by
+  classical
+  by_cases hι : allEqual ι
+  · simp [allEqual_extendColor_iff, hι]
+  · simp [allEqual_extendColor_iff, hι]
+
+/-- The pivot-star contraction sends an eight-vertex solution to a six-vertex
+solution over any field. -/
+theorem eqSystemN_pivotStarContract
+    {K : Type} [Field K]
+    (W : WeightsN 8 3 K)
+    (hs : pivotMass W ≠ 0)
+    (hStar : CorrectionOnZeroStar W)
+    (hEq : EqSystemN 8 3 W) :
+    EqSystemN 6 3 (pivotStarContract W) := by
+  intro ι
+  rw [pmSumN_pivotStarContract W hs hStar ι]
+  simp_rw [hEq]
+  exact sum_extendColor_indicator ι
+
+/-- Any field for which the six-vertex equation system has no solution also has
+no eight-vertex solution in the fixed canonical pivot-star branch. -/
+theorem no_eight_pivotStar_of_no_six
+    {K : Type} [Field K]
+    (hNo6 : ¬ ∃ U : WeightsN 6 3 K, EqSystemN 6 3 U) :
+    ¬ ∃ W : WeightsN 8 3 K,
+      EqSystemN 8 3 W ∧ pivotMass W ≠ 0 ∧ CorrectionOnZeroStar W := by
+  rintro ⟨W, hEq, hs, hStar⟩
+  exact hNo6 ⟨pivotStarContract W,
+    eqSystemN_pivotStarContract W hs hStar hEq⟩
+
 end D19Round20
