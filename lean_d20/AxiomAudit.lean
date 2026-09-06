@@ -3,8 +3,9 @@ import D20Round21
 import D20Round22
 import D20Round23
 import D20Round24
+import D20Round25
 
-/-! # Axiom audit for D20 Rounds 20–24 -/
+/-! # Axiom audit for D20 Rounds 20–25 -/
 
 #print axioms D20Round20.ame8_6_fourBlockMass_uniform
 #print axioms D20Round20.ame8_6_twoBlockMass_uniform
@@ -16,3 +17,9 @@ import D20Round24
 #print axioms D20Round23.supportCount_permuteState
 #print axioms D20Round23.ame8_6_minSupport_unique_completion_perm
 #print axioms D20Round24.ame8_6_minSupport_nonzero_cell_normSq
+#print axioms D20Round25.combineFirst_firstFour_lastFour
+#print axioms D20Round25.minSupport_permuted_eq_of_firstFour_eq
+#print axioms D20Round25.ame8_6_minSupport_projection_injective
+#print axioms D20Round25.ame8_6_minSupport_projection_bijective
+#print axioms D20Round25.ame8_6_minSupport_no_four_coordinate_agreement
+#print axioms D20Round25.ame8_6_minSupport_hasIndexOneStrengthFourSupport
