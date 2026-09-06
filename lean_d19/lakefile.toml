@@ -1,0 +1,11 @@
+name = "d19_round20_pivot_contraction"
+version = "0.1.0"
+defaultTargets = ["D19PivotContraction"]
+
+[[require]]
+name = "formal_conjectures"
+git = "https://github.com/google-deepmind/formal-conjectures.git"
+rev = "8323e878b83fcd7f4a448256069352a265460d75"
+
+[[lean_lib]]
+name = "D19PivotContraction"
