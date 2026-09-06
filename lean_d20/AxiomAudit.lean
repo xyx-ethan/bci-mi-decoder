@@ -22,3 +22,5 @@ import D20Round26
 #print axioms D20Round25.ame8_6_minSupport_hasIndexOneStrengthFourSupport
 #print axioms D20Round26.sum_pairCellSize
 #print axioms D20Round26.unique_triple_cell
+#print axioms D20Round26.sum_tripleDegree
+#print axioms D20Round26.exists_tripleDegree_le_one
