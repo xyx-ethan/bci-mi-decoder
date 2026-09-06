@@ -1,9 +1,9 @@
-name: D20 Round21 Lean audit
+name: D20 Round22 Lean audit
 
 on:
   push:
     branches:
-      - d20-round21-support1296-20260905
+      - d20-round22-minimal-support-graph-20260905
   workflow_dispatch:
 
 permissions:
@@ -43,7 +43,7 @@ jobs:
           fi
       - name: Reject forbidden source constructs
         run: |
-          for f in lean_d20/D20Round20.lean lean_d20/D20Round21.lean lean_d20/AxiomAudit.lean; do
+          for f in lean_d20/D20Round20.lean lean_d20/D20Round21.lean lean_d20/D20Round22.lean lean_d20/AxiomAudit.lean; do
             if grep -n -E '\b(sorry|admit|axiom|unsafe|native_decide)\b' "$f"; then
               echo "forbidden Lean source token detected in $f"
               exit 1
