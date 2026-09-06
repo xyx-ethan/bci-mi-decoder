@@ -105,21 +105,21 @@ def fourMatchSum (X : WeightsN 6 3 ℂ) (ι : Fin 6 → Fin 3)
 def linearUpdateSum (W : WeightsN 8 3 ℂ) (ι : Fin 6 → Fin 3) : ℂ :=
   let X := residualWeight W
   let R := pivotUpdate W
-    edgeWeight6 R ι 0 1 * fourMatchSum X ι 2 3 4 5 +
-    edgeWeight6 R ι 0 2 * fourMatchSum X ι 1 3 4 5 +
-    edgeWeight6 R ι 0 3 * fourMatchSum X ι 1 2 4 5 +
-    edgeWeight6 R ι 0 4 * fourMatchSum X ι 1 2 3 5 +
-    edgeWeight6 R ι 0 5 * fourMatchSum X ι 1 2 3 4 +
-    edgeWeight6 R ι 1 2 * fourMatchSum X ι 0 3 4 5 +
-    edgeWeight6 R ι 1 3 * fourMatchSum X ι 0 2 4 5 +
-    edgeWeight6 R ι 1 4 * fourMatchSum X ι 0 2 3 5 +
-    edgeWeight6 R ι 1 5 * fourMatchSum X ι 0 2 3 4 +
-    edgeWeight6 R ι 2 3 * fourMatchSum X ι 0 1 4 5 +
-    edgeWeight6 R ι 2 4 * fourMatchSum X ι 0 1 3 5 +
-    edgeWeight6 R ι 2 5 * fourMatchSum X ι 0 1 3 4 +
-    edgeWeight6 R ι 3 4 * fourMatchSum X ι 0 1 2 5 +
-    edgeWeight6 R ι 3 5 * fourMatchSum X ι 0 1 2 4 +
-    edgeWeight6 R ι 4 5 * fourMatchSum X ι 0 1 2 3
+  edgeWeight6 R ι 0 1 * fourMatchSum X ι 2 3 4 5 +
+  edgeWeight6 R ι 0 2 * fourMatchSum X ι 1 3 4 5 +
+  edgeWeight6 R ι 0 3 * fourMatchSum X ι 1 2 4 5 +
+  edgeWeight6 R ι 0 4 * fourMatchSum X ι 1 2 3 5 +
+  edgeWeight6 R ι 0 5 * fourMatchSum X ι 1 2 3 4 +
+  edgeWeight6 R ι 1 2 * fourMatchSum X ι 0 3 4 5 +
+  edgeWeight6 R ι 1 3 * fourMatchSum X ι 0 2 4 5 +
+  edgeWeight6 R ι 1 4 * fourMatchSum X ι 0 2 3 5 +
+  edgeWeight6 R ι 1 5 * fourMatchSum X ι 0 2 3 4 +
+  edgeWeight6 R ι 2 3 * fourMatchSum X ι 0 1 4 5 +
+  edgeWeight6 R ι 2 4 * fourMatchSum X ι 0 1 3 5 +
+  edgeWeight6 R ι 2 5 * fourMatchSum X ι 0 1 3 4 +
+  edgeWeight6 R ι 3 4 * fourMatchSum X ι 0 1 2 5 +
+  edgeWeight6 R ι 3 5 * fourMatchSum X ι 0 1 2 4 +
+  edgeWeight6 R ι 4 5 * fourMatchSum X ι 0 1 2 3
 
 lemma allEqual_extend_iff (a b : Fin 3) (ι : Fin 6 → Fin 3) :
     allEqual (extendColor a b ι) ↔
