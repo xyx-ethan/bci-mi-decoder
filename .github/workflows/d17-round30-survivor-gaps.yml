@@ -1,0 +1,38 @@
+name: D17 Round30 survivor-gap kernel bridge
+
+on:
+  push:
+    branches:
+      - d17-round30-survivor-gaps-kernel-20260906
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  strict-lean:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned Lean
+        run: |
+          curl -sSf https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o /tmp/elan-init.sh
+          sh /tmp/elan-init.sh -y --default-toolchain leanprover/lean4:v4.33.1
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Verify toolchain
+        run: |
+          lean --version
+          lake --version
+      - name: Resolve pinned dependencies
+        working-directory: lean_d17
+        run: |
+          lake update
+          lake exe cache get
+      - name: Exact strict build
+        working-directory: lean_d17
+        run: lake --wfail build
+      - name: Forbidden dependency scan
+        working-directory: lean_d17
+        run: |
+          ! grep -R -n -E 'sorry|admit|^[[:space:]]*axiom |unsafe|native_decide|Lean\.ofReduceBool|Lean\.trustCompiler' D17Round30SurvivorGaps.lean
