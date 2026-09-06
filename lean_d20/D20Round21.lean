@@ -1,7 +1,7 @@
 import D20Round20
 
 /-!
-# D20 Round 21: a kernel-certified product-basis support lower bound for AME(8,6)
+# D20 Round 21: a kernel-certified computational-basis support lower bound for AME(8,6)
 
 This file uses the Round-20 exact four-party cylinder-mass theorem and proves that every
 `AME(8,6)` state has at least `6^4 = 1296` nonzero amplitudes in the computational basis.
