@@ -98,9 +98,8 @@ theorem badFourthLift_normalized_noIntegerSquare
       (w : ZMod 3) ^ 2 = (((3 * t + 2 : ℤ)) : ZMod 3) := by
     simpa only [Int.cast_pow] using hcast
   have hrhs : (((3 * t + 2 : ℤ)) : ZMod 3) = 2 := by
-    rw [ZMod.intCast_eq_intCast_iff_dvd_sub]
-    refine ⟨-t, ?_⟩
-    ring
+    push_cast
+    norm_num
   exact noSquareTwoModThree (w : ZMod 3) (hcast'.trans hrhs)
 
 /-- The bad normalized class forces residue 162 modulo 243. -/
