@@ -3,7 +3,7 @@ D14 Round 11: explicit odd witness for OeisA51903.conjecture3.
 No declaration below uses the open conjecture itself.
 -/
 import Mathlib
-import FormalConjectures.OEIS.51903
+import FormalConjectures.OEIS.«51903»
 
 set_option maxRecDepth 10000
 set_option maxHeartbeats 0
