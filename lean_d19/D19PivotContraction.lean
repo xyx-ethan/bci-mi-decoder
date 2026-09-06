@@ -139,8 +139,8 @@ lemma extension_target_sum (ι : Fin 6 → Fin 3) :
           (if a = c then 1 else 0) := by
       by_cases hac : a = c
       · subst a
-        simp
-      · simp [hac]
+        simp [eq_comm]
+      · simp [hac, eq_comm]
     simp_rw [allEqual_extend_iff, hι, hinner]
     simp
   · simp [allEqual_extend_iff, hι]
@@ -153,7 +153,8 @@ lemma extension_sum_eq_compact
   classical
   simp [pmSumN, pmSumList, pmSumListAux, vertices]
   simp [linearUpdateSum, fourMatchSum, edgeWeight6, residualWeight, pivotUpdate,
-    pivotSum, leftLeg, rightLeg, liftResidual, extendColor, Fin.sum_univ_succ]
+    pivotSum, leftLeg, rightLeg, liftResidual, extendColor, mkEdge,
+    Fin.sum_univ_succ]
   ring
 
 /-- Exact fixed-size contraction identity for the three-active-residual-vertex branch. -/
@@ -199,10 +200,10 @@ theorem contracted_pmSum_eq_extension_sum
     hU 4 5 i j (by norm_num)
   simp_rw [pmSumN_six_explicit]
   simp [edgeWeight6, contractedWeight, updatedWeight, residualWeight,
-    linearUpdateSum, fourMatchSum,
+    linearUpdateSum, fourMatchSum, liftResidual, mkEdge,
     hU03, hU04, hU05, hU13, hU14, hU15,
     hU23, hU24, hU25, hU34, hU35, hU45]
-  simp [pivotUpdate]
+  simp [pivotUpdate, mkEdge]
   field_simp [hs] <;> ring
 
 /-- A solution on eight vertices in this branch contracts to a six-vertex solution. -/
