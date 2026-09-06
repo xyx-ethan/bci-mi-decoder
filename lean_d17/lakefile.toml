@@ -1,6 +1,6 @@
-name = "d17_a125_finite_y"
+name = "d17_round28_a14_3917"
 version = "0.1.0"
-defaultTargets = ["D17FiniteY", "D17RatioBridge", "D17A125FiniteY"]
+defaultTargets = ["D17FiniteY", "D17RatioBridge", "D17A125FiniteY", "D17A14_3917"]
 
 [[require]]
 name = "formal_conjectures"
@@ -15,3 +15,6 @@ name = "D17RatioBridge"
 
 [[lean_lib]]
 name = "D17A125FiniteY"
+
+[[lean_lib]]
+name = "D17A14_3917"
