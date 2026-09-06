@@ -29,7 +29,7 @@ jobs:
           set -euxo pipefail
           cd fc
           mkdir -p FormalConjectures/Research
-          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/220d63d80a4f9d9c6c6d4f90d0872df0d6579a89/research/D16R35P112Period.lean \
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/693c8e466a696c9c7fd62b7ae90e859f9216ccf8/research/D16R35P112Period.lean \
             -o FormalConjectures/Research/D16R35P112Period.lean
           sha256sum FormalConjectures/Research/D16R35P112Period.lean
           ! grep -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' FormalConjectures/Research/D16R35P112Period.lean
