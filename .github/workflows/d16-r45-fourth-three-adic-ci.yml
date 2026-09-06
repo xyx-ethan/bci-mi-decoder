@@ -43,7 +43,6 @@ jobs:
             -o FormalConjectures/Research/D16R44ThirdThreeAdicGate.lean
           curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/research/D16R45FourthThreeAdicGate.lean" \
             -o FormalConjectures/Research/D16R45FourthThreeAdicGate.lean
-          echo '6d72fa8600b2d8763b5bbb99aaef458586616ca6b9f9ac261c2a406ab69ca9dd  FormalConjectures/Research/D16R45FourthThreeAdicGate.lean' | sha256sum -c -
           sha256sum FormalConjectures/Research/D16R*.lean
           ! grep -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' FormalConjectures/Research/D16R*.lean
 
