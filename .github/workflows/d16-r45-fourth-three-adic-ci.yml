@@ -1,0 +1,126 @@
+name: D16 R45 fourth three-adic gate kernel verification
+
+on:
+  push:
+    branches:
+      - d16-r45-fourth-three-adic-ci
+
+permissions:
+  contents: read
+
+jobs:
+  kernel-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Clone pinned Formal Conjectures
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/google-deepmind/formal-conjectures.git fc
+          cd fc
+          git checkout 8323e878b83fcd7f4a448256069352a265460d75
+          test "$(git rev-parse HEAD)" = "8323e878b83fcd7f4a448256069352a265460d75"
+          test "$(cat lean-toolchain)" = "leanprover/lean4:v4.33.1"
+          grep -q '0df444a360eaa60ab8c11dca51a86af692955474' lake-manifest.json
+          sha256sum FormalConjectures/OEIS/67720.lean lean-toolchain lake-manifest.json
+
+      - name: Inject pinned R39-R45 modules
+        run: |
+          set -euxo pipefail
+          cd fc
+          mkdir -p FormalConjectures/Research
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/80ce3bca2d1103566daa258915be373f9d80ed72/research/D16R39DiscriminantBridge.lean \
+            -o FormalConjectures/Research/D16R39DiscriminantBridge.lean
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/3a21d3e787b990977547d31aee7ec000b581a0c0/research/D16R40SourceToQuadratic.lean \
+            -o FormalConjectures/Research/D16R40SourceToQuadratic.lean
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/f9208b108bfc558a993e3d4fef933f5b4e030af6/research/D16R41ModularNonsquare.lean \
+            -o FormalConjectures/Research/D16R41ModularNonsquare.lean
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/61e4e778b492c49b0d956d308d639e0e97226bd4/research/D16R42ThreeAdicGate.lean \
+            -o FormalConjectures/Research/D16R42ThreeAdicGate.lean
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/5675f1e866ecd4b79c2acf41e24a354744c6d019/research/D16R43SecondThreeAdicGate.lean \
+            -o FormalConjectures/Research/D16R43SecondThreeAdicGate.lean
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/f24c369f6164e10c89a4a57e0e1edd210c98deef/research/D16R44ThirdThreeAdicGate.lean \
+            -o FormalConjectures/Research/D16R44ThirdThreeAdicGate.lean
+          curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/research/D16R45FourthThreeAdicGate.lean" \
+            -o FormalConjectures/Research/D16R45FourthThreeAdicGate.lean
+          echo 'fb111df019a408f9ea0d079d1a618318f54f8849b69d77f82bacc9ddf33c397c  FormalConjectures/Research/D16R45FourthThreeAdicGate.lean' | sha256sum -c -
+          sha256sum FormalConjectures/Research/D16R*.lean
+          ! grep -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' FormalConjectures/Research/D16R*.lean
+
+      - name: Install elan exactly as upstream
+        run: |
+          set -euxo pipefail
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v1.4.2/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Fetch pinned mathlib olean cache
+        run: |
+          set -euxo pipefail
+          cd fc
+          lean --version
+          lake --version
+          lake exe cache get
+
+      - name: Focused warning-free build
+        run: |
+          set -euxo pipefail
+          cd fc
+          lake --wfail build \
+            FormalConjectures.Research.D16R39DiscriminantBridge \
+            FormalConjectures.Research.D16R40SourceToQuadratic \
+            FormalConjectures.Research.D16R41ModularNonsquare \
+            FormalConjectures.Research.D16R42ThreeAdicGate \
+            FormalConjectures.Research.D16R43SecondThreeAdicGate \
+            FormalConjectures.Research.D16R44ThirdThreeAdicGate \
+            FormalConjectures.Research.D16R45FourthThreeAdicGate
+          echo D16_R45_FOCUSED_KERNEL_PASS
+
+      - name: Generate aggregate files
+        run: |
+          set -euxo pipefail
+          cd fc
+          ./scripts/mk_all_formathlib.sh
+          rm -f FormalConjectures/All.lean
+          lake exe mk_all --lib FormalConjectures || true
+          mv FormalConjectures.lean FormalConjectures/All.lean
+          echo "set_option linter.style.moduleDocstring false" >> FormalConjectures/All.lean
+
+      - name: Full warning-free project build
+        run: |
+          set -euxo pipefail
+          cd fc
+          set -o pipefail
+          lake --wfail build 2>&1 | tee /tmp/d16_r45_lake_wfail_build.log
+          echo D16_R45_LAKE_WFAIL_BUILD_PASS
+
+      - name: Kernel axiom audit
+        run: |
+          set -euxo pipefail
+          cd fc
+          cat > AuditD16R45.lean <<'LEAN'
+          import FormalConjectures.Research.D16R45FourthThreeAdicGate
+          #print axioms D16R45FourthThreeAdicGate.discriminant_eq_eightyone_mul_normalized
+          #print axioms D16R45FourthThreeAdicGate.square_discriminant_descends
+          #print axioms D16R45FourthThreeAdicGate.noSquareTwoModThree
+          #print axioms D16R45FourthThreeAdicGate.badFourthLift_normalized_noIntegerSquare
+          #print axioms D16R45FourthThreeAdicGate.badFourthLift_discriminant_mod243
+          #print axioms D16R45FourthThreeAdicGate.noSquare162Mod243
+          #print axioms D16R45FourthThreeAdicGate.badFourthLift_noSquareMod243
+          #print axioms D16R45FourthThreeAdicGate.badFourthLift_noIntegerSquare
+          #print axioms D16R45FourthThreeAdicGate.badFourthLift_noIntegerSquare_via_descent
+          #print axioms D16R45FourthThreeAdicGate.badFourthLift_noIntegerRoot
+          #print axioms D16R45FourthThreeAdicGate.badFourthLift_excludes_sourceSystem
+          #print axioms D16R45FourthThreeAdicGate.square_discriminant_not_badFourthLift
+          #print axioms D16R45FourthThreeAdicGate.completeLocalResidueClassification
+          #print axioms D16R45FourthThreeAdicGate.bad_control
+          #print axioms D16R45FourthThreeAdicGate.bad_control_values
+          #print axioms D16R45FourthThreeAdicGate.bad_control_sourceSystem_excluded
+          #print axioms D16R45FourthThreeAdicGate.square_control_values
+          #print axioms D16R45FourthThreeAdicGate.square_control_not_bad
+          #print axioms D16R45FourthThreeAdicGate.square_control_descends
+          LEAN
+          set -o pipefail
+          lake env lean AuditD16R45.lean 2>&1 | tee /tmp/d16_r45_axioms.log
+          ! grep -E 'sorryAx|native_decide\.ax|Lean\.ofReduceBool|Lean\.trustCompiler' /tmp/d16_r45_axioms.log
+          echo D16_R45_AXIOM_AUDIT_PASS
