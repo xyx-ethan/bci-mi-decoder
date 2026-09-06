@@ -159,9 +159,10 @@ theorem inertPrime_ratioTwo_unit_and_gap
           simp only [normSq] at hN2
           nlinarith [sq_nonneg wx]
         have hwy2 : wy * wy ≤ 1 := by nlinarith
-        have hB2nonneg : 0 ≤ B * B := by positivity
+        have hB2nonneg : 0 ≤ B * B := mul_self_nonneg B
         have hmul := mul_le_mul_of_nonneg_left hwy2 hB2nonneg
         dsimp [D]
+        simp only [zero_mul, zero_add]
         calc
           (B * wy) * (B * wy) = (B * B) * (wy * wy) := by ring
           _ ≤ (B * B) * 1 := hmul
@@ -180,9 +181,10 @@ theorem inertPrime_ratioTwo_unit_and_gap
           simp only [normSq] at hN2
           nlinarith [sq_nonneg wy]
         have hwx2 : wx * wx ≤ 1 := by nlinarith
-        have hA2nonneg : 0 ≤ A * A := by positivity
+        have hA2nonneg : 0 ≤ A * A := mul_self_nonneg A
         have hmul := mul_le_mul_of_nonneg_left hwx2 hA2nonneg
         dsimp [D]
+        simp only [zero_mul, add_zero]
         calc
           (A * wx) * (A * wx) = (A * A) * (wx * wx) := by ring
           _ ≤ (A * A) * 1 := hmul
