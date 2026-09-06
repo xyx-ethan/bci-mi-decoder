@@ -1,45 +1,41 @@
-#include <boost/multiprecision/cpp_int.hpp>
 #include <cassert>
+#include <cstdint>
 #include <iostream>
-using boost::multiprecision::cpp_int;
 
-static cpp_int ipow(cpp_int a, unsigned e) {
-  cpp_int r = 1;
-  while (e) {
-    if (e & 1U) r *= a;
-    a *= a;
-    e >>= 1U;
-  }
+using u128 = unsigned __int128;
+
+static u128 ipow(u128 a, unsigned e) {
+  u128 r = 1;
+  for (unsigned i = 0; i < e; ++i) r *= a;
   return r;
 }
 
-static bool boundary(long long c, long long target_num = 262146) {
-  cpp_int C = c;
-  return ipow(C, 3) * 262143 < cpp_int(target_num) * ipow(C - 1, 3);
+static bool boundary(std::uint64_t c, std::uint64_t target_num = 262146) {
+  u128 C = c;
+  return ipow(C, 3) * 262143u < u128(target_num) * ipow(C - 1, 3);
 }
 
-static void check_ratio_bounds(long long t) {
-  cpp_int T = t;
-  cpp_int p5 = ipow(T,4) + ipow(T,3) + ipow(T,2) + T + 1;
-  cpp_int p6 = ipow(T,2) - T + 1;
-  // R3(t) < t/(t-1), cross-multiplied over positive denominators.
+static void check_ratio_bounds(std::uint64_t t) {
+  u128 T = t;
+  u128 p5 = ipow(T,4) + ipow(T,3) + ipow(T,2) + T + 1;
+  u128 p6 = ipow(T,2) - T + 1;
+  // Exact cross-multiplication over positive denominators.
   assert((ipow(T,2) + 1) * (T - 1) < T * p6);
-  // R4(t) < t/(t-1), cross-multiplied over positive denominators.
   assert(p5 * (T - 1) < T * (ipow(T,4) + 1));
 }
 
 int main() {
-  for (long long t : {2LL, 3LL, 17LL, 87383LL, 262145LL, 1000003LL})
+  for (std::uint64_t t : {2ULL, 3ULL, 17ULL, 87383ULL, 262145ULL, 1000003ULL})
     check_ratio_bounds(t);
 
-  cpp_int diff = cpp_int(262146) * ipow(cpp_int(262144),3)
-               - cpp_int(262143) * ipow(cpp_int(262145),3);
-  assert(diff == 524289);
+  u128 diff = u128(262146) * ipow(u128(262144),3)
+            - u128(262143) * ipow(u128(262145),3);
+  assert(diff == 524289u);
   assert(boundary(262145));
   assert(!boundary(262144));
   assert(!boundary(262145, 262145));
 
-  std::cout << "PASS independent cpp_int checker\n";
-  std::cout << "boundary_cross_difference=" << diff << "\n";
+  std::cout << "PASS independent __int128 checker\n";
+  std::cout << "boundary_cross_difference=524289\n";
   std::cout << "mutations_rejected=2/2\n";
 }
