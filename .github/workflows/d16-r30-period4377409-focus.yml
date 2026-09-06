@@ -27,7 +27,7 @@ jobs:
           set -euxo pipefail
           cd fc
           mkdir -p FormalConjectures/Research
-          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/4a49e04adbe6226dd26ef4404482995b0e11b2d5/research/D16R30Period4377409.lean -o FormalConjectures/Research/D16R30Period4377409.lean
+          curl -fsSL https://raw.githubusercontent.com/xyx-ethan/bci-mi-decoder/9cf6f0b16ca171992ad7984ac3219fa9c9afdcde/research/D16R30Period4377409.lean -o FormalConjectures/Research/D16R30Period4377409.lean
           sha256sum FormalConjectures/Research/D16R30Period4377409.lean
           ! grep -E '\b(sorry|admit|native_decide)\b|^\s*(axiom|unsafe)\b|Lean\.ofReduceBool|Lean\.trustCompiler' FormalConjectures/Research/D16R30Period4377409.lean
       - name: Install elan
