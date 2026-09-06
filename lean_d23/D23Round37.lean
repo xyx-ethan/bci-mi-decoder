@@ -86,6 +86,8 @@ theorem fullRank_twiceGaussian_norm_one_or_two
   rcases fullRank_twiceGaussian_eight_points
       p q A B wx wy ux uy tx ty rx ry sx sy hp hpq hbeta hdet henergy hwx hwy with
     h | h | h | h | h | h | h | h
-  all_goals rcases h with ⟨rfl, rfl⟩ <;> norm_num [normSq]
+  all_goals
+    rcases h with ⟨rfl, rfl⟩
+    norm_num [normSq]
 
 end D23Round37
