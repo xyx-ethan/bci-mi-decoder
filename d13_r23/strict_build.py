@@ -44,7 +44,7 @@ s.CORE = COPYRIGHT + s.CORE + r'''
 -- Cheap semantic and mutation tests inside the strict kernel build.
 example : OeisA67599.a 0 = 0 := by decide
 example : OeisA67599.a 1 = 0 := by decide
-example : OeisA67599.a 2 = 21 := by decide
+example : OeisA67599.concatenateNats 2 1 = 21 := by norm_num [OeisA67599.concatenateNats]
 example : OeisA67599.concatenateNats 31 51 = 3151 := by norm_num [OeisA67599.concatenateNats]
 example : OeisA67599.concatenateNats 31 51 ≠ 3511 := by norm_num [OeisA67599.concatenateNats]
 '''
